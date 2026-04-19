@@ -61,7 +61,7 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 	}
 	isUpdated := h.Service.UpdateTask(val, &updateTaskDTO)
 	if isUpdated {
-		c.JSON(http.StatusOK, gin.H{"data": currentTask})
+		c.JSON(http.StatusOK, gin.H{"message": "task updated"})
 		return
 	}
 	c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
@@ -78,7 +78,7 @@ func (h *Handler) DeleteTask(c *gin.Context) {
 	}
 	isDeleted := h.Service.DeleteTask(val)
 	if isDeleted {
-		c.JSON(http.StatusOK, gin.H{"data": currentTask})
+		c.JSON(http.StatusOK, gin.H{"message": "task deleted"})
 		return
 	}
 	c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
@@ -87,51 +87,60 @@ func (h *Handler) DeleteTask(c *gin.Context) {
 }
 
 func (h *Handler) GetAllTasks(c *gin.Context) {
-	page := c.DefaultQuery("page", "1")
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 
-	pageSize := c.DefaultQuery("pageSize", "20")
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 
-	pageInt, _ := strconv.Atoi(page)
-
-	pageSizeInt, _ := strconv.Atoi(pageSize)
-
-	allTasks := h.Service.GetAllTasks(pageInt, pageSizeInt)
+	allTasks := h.Service.GetAllTasks(page, pageSize)
 
 	c.JSON(http.StatusOK, gin.H{"data": allTasks})
 
 	return
 }
 
-func (h *Handler) GetTaskByMonthAndYear(c *gin.Context) {
+func (h *Handler) FilterTasks(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
-	month, _ := strconv.Atoi(c.Query("month")) // ← c.Query not c.Param
-	year, _ := strconv.Atoi(c.Query("year"))
+	year := c.Query("year")
+	month := c.Query("month")
+	day := c.Query("day")
 
-	allTasks := h.Service.GetTaskByMonthAndYear(month, year, page, pageSize)
-	c.JSON(http.StatusOK, gin.H{"data": allTasks})
+	if year != "" && month != "" && day != "" {
+		y, _ := strconv.Atoi(year)
+		m, _ := strconv.Atoi(month)
+		d, _ := strconv.Atoi(day)
+		tasks := h.Service.GetTaskByCreatedDate(d, m, y, page, pageSize)
+		c.JSON(http.StatusOK, gin.H{"data": tasks})
+		return
+	}
 
-	return
+	if year != "" && month != "" {
+		y, _ := strconv.Atoi(year)
+		m, _ := strconv.Atoi(month)
+		tasks := h.Service.GetTaskByMonthAndYear(m, y, page, pageSize)
+		c.JSON(http.StatusOK, gin.H{"data": tasks})
+		return
+	}
 
+	if year != "" {
+		y, _ := strconv.Atoi(year)
+		tasks := h.Service.GetTaskByYear(y, page, pageSize)
+		c.JSON(http.StatusOK, gin.H{"data": tasks})
+		return
+	}
+
+	tasks := h.Service.GetAllTasks(page, pageSize)
+	c.JSON(http.StatusOK, gin.H{"data": tasks})
 }
 
-func (h *Handler) GetTaskByCreatedDate(c *gin.Context) {
+func (h *Handler) SearchByTask(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
-	day, _ := strconv.Atoi(c.Query("day")) // ← c.Query not c.Param
-	month, _ := strconv.Atoi(c.Query("month"))
-	year, _ := strconv.Atoi(c.Query("year"))
+	name := c.Query("name")
 
-	allTasks := h.Service.GetTaskByCreatedDate(day, month, year, page, pageSize)
-	c.JSON(http.StatusOK, gin.H{"data": allTasks})
-}
+	tasks := h.Service.SearchTaskByName(name, page, pageSize)
 
-func (h *Handler) GetTaskByYear(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
-	year, _ := strconv.Atoi(c.Query("year")) // ← c.Query not c.Param
+	c.JSON(http.StatusOK, gin.H{"data": tasks})
 
-	allTasks := h.Service.GetTaskByYear(year, page, pageSize)
-	c.JSON(http.StatusOK, gin.H{"data": allTasks})
 	return
 }

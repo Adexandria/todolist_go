@@ -27,7 +27,7 @@ func (t *TaskService) UpdateTask(id int, dto *models.UpdateTaskDTO) bool {
 	if currentTask == (models.TaskDTO{}) {
 		return false
 	}
-	return t.repo.Update(dto)
+	return t.repo.Update(id, dto)
 }
 
 func (t *TaskService) DeleteTask(id int) bool {

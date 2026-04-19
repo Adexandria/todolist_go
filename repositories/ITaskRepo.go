@@ -4,7 +4,7 @@ import "SM/models"
 
 type Tasker interface {
 	Create(dto *models.CreateTaskDTO) (uint, string)
-	Update(dto *models.UpdateTaskDTO) bool
+	Update(id int, dto *models.UpdateTaskDTO) bool
 	Delete(id int) bool
 	Get(id int) models.TaskDTO
 	GetAll(page int, pageSize int) models.PaginatedDTO
