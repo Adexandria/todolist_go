@@ -4,7 +4,6 @@ go 1.26
 
 require (
 	go.uber.org/dig v1.19.0
-	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
 )
 
