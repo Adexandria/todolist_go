@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Main function to set up the application, including dependency injection and route handling
 func main() {
 	container := services.CreateContainer()
 

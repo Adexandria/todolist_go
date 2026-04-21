@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// Connects to the db
 func connect() *gorm.DB {
 	db, err := gorm.Open(sqlite.Open("todo.db"), &gorm.Config{})
 	if err != nil {
@@ -21,6 +22,7 @@ func connect() *gorm.DB {
 	return db
 }
 
+// RegisterDb Registers the db connection in the dependency injection container
 func RegisterDb() *dig.Container {
 	container := dig.New()
 

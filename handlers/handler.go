@@ -13,12 +13,14 @@ type Handler struct {
 	Service services.ITaskService
 }
 
+//Constructor function to instantiate with the TaskService dependency injected
 func TaskHandler(service *services.TaskService) *Handler {
 	return &Handler{
 		Service: service,
 	}
 }
 
+// Handler method to retrieve a task by its ID
 func (h *Handler) GetTaskById(c *gin.Context) {
 	id := c.Param("id")
 	val, _ := strconv.Atoi(id)
@@ -30,6 +32,7 @@ func (h *Handler) GetTaskById(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": currentTask})
 }
 
+// Handler method to create a new task
 func (h *Handler) CreateTask(c *gin.Context) {
 	var createTaskDTO models.CreateTaskDTO
 	if err := c.ShouldBind(&createTaskDTO); err != nil {
@@ -47,6 +50,7 @@ func (h *Handler) CreateTask(c *gin.Context) {
 
 }
 
+// Handler method to update an existing task by its ID
 func (h *Handler) UpdateTask(c *gin.Context) {
 	var updateTaskDTO models.UpdateTaskDTO
 	if err := c.ShouldBind(&updateTaskDTO); err != nil {
@@ -65,9 +69,9 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
-	return
 }
 
+// Handler method to delete a task by its ID
 func (h *Handler) DeleteTask(c *gin.Context) {
 	id := c.Param("id")
 	val, _ := strconv.Atoi(id)
@@ -82,10 +86,9 @@ func (h *Handler) DeleteTask(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
-
-	return
 }
 
+// Handler method to retrieve all tasks with pagination
 func (h *Handler) GetAllTasks(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 
@@ -94,10 +97,9 @@ func (h *Handler) GetAllTasks(c *gin.Context) {
 	allTasks := h.Service.GetAllTasks(page, pageSize)
 
 	c.JSON(http.StatusOK, gin.H{"data": allTasks})
-
-	return
 }
 
+// Handler method to filter tasks based on query parameters such as year, month, and day
 func (h *Handler) FilterTasks(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
@@ -133,6 +135,7 @@ func (h *Handler) FilterTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": tasks})
 }
 
+// Handler method to search for tasks by name with pagination
 func (h *Handler) SearchByTask(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
@@ -142,5 +145,4 @@ func (h *Handler) SearchByTask(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": tasks})
 
-	return
 }

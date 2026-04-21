@@ -4,7 +4,6 @@ import (
 	"SM/models"
 	"context"
 	"fmt"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -13,27 +12,19 @@ type TaskRepository struct {
 	Db *gorm.DB
 }
 
+// Constructor function to create a new TaskRepository instance with the provided database connection
+
 func TaskRepo(db *gorm.DB) *TaskRepository {
 	return &TaskRepository{
 		Db: db,
 	}
 }
 
+// Ensures that TaskRepository implements the Tasker interface
 var _ Tasker = (*TaskRepository)(nil)
 
-func (r *TaskRepository) Create(dto *models.CreateTaskDTO) (uint, string) {
-	newTask := &models.Task{
-		Description: dto.Description,
-		Name:        dto.Name,
-		CreatedAt:   time.Now(),
-	}
-	if dto.DueDate != "" {
-		t, err := time.Parse("2006-01-02 15:04:05", dto.DueDate)
-		if err != nil {
-			return 0, "Failed to parse due date"
-		}
-		newTask.DueDate = &t
-	}
+// Creates a new task
+func (r *TaskRepository) Create(newTask *models.Task) (uint, string) {
 
 	ctx := context.Background()
 
@@ -46,19 +37,8 @@ func (r *TaskRepository) Create(dto *models.CreateTaskDTO) (uint, string) {
 	return newTask.ID, ""
 }
 
-func (r *TaskRepository) Update(id int, dto *models.UpdateTaskDTO) bool {
-	updateTask := &models.Task{
-		Description: dto.Description,
-		Name:        dto.Name,
-	}
-
-	if dto.DueDate != "" {
-		t, err := time.Parse("2006-01-02 15:04:05", dto.DueDate)
-		if err != nil {
-			return false
-		}
-		updateTask.DueDate = &t
-	}
+// Updates an existing task by its ID
+func (r *TaskRepository) Update(id int, updateTask *models.Task) bool {
 
 	ctx := context.Background()
 
@@ -71,68 +51,54 @@ func (r *TaskRepository) Update(id int, dto *models.UpdateTaskDTO) bool {
 	return true
 }
 
+// Deletes a task by its ID
 func (r *TaskRepository) Delete(id int) bool {
 	ctx := context.Background()
 	_, err := gorm.G[models.Task](r.Db).Where("id = ?", id).Delete(ctx)
 	return err == nil
 }
 
-func (r *TaskRepository) Get(id int) models.TaskDTO {
-
+// Retrieves a task by its ID
+func (r *TaskRepository) Get(id int) models.Task {
 	ctx := context.Background()
 	currentTask, err := gorm.G[models.Task](r.Db).Where("id = ?", id).First(ctx)
 	if err != nil {
-		return models.TaskDTO{}
+		return models.Task{}
 	}
 
-	var dueDate string
-
-	if currentTask.DueDate != nil {
-		dueDate = currentTask.DueDate.Format("2006-01-02")
-	}
-
-	return models.TaskDTO{
-		ID:          fmt.Sprintf("%d", currentTask.ID),
-		Description: currentTask.Description,
-		Name:        currentTask.Name,
-		DueDate:     dueDate,
-		CreatedDate: currentTask.CreatedAt.Format("2006-01-02 15:04:05"),
-	}
+	return currentTask
 }
-func (r *TaskRepository) GetAll(page int, pageSize int) models.PaginatedDTO {
-	var total int
 
+// Retrieves all tasks with pagination
+func (r *TaskRepository) GetAll(page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
 	tasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page - 1) * pageSize).Order("created_at").Find(ctx)
 
 	if err != nil {
 		fmt.Println(err)
-		return models.PaginatedDTO{}
+		return []models.Task{}
 	}
+	return tasks
 
-	total = len(tasks)
-
-	return models.ToPaginatedDTO(tasks, total, pageSize, pageSize)
 }
 
-func (r *TaskRepository) GetByYear(year int, page int, pageSize int) models.PaginatedDTO {
-
+// Retrieves tasks based on the specified year with pagination
+func (r *TaskRepository) GetByYear(year int, page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
 	currentTasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page-1)*pageSize).
 		Where("strftime('%Y', created_at) = ?", fmt.Sprintf("%d", year)).Find(ctx)
 
 	if err != nil {
-		return models.PaginatedDTO{}
+		return []models.Task{}
 	}
 
-	total := len(currentTasks)
-
-	return models.ToPaginatedDTO(currentTasks, total, pageSize, pageSize)
+	return currentTasks
 }
 
-func (r *TaskRepository) GetByMonthAndYear(month int, year int, page int, pageSize int) models.PaginatedDTO {
+// Retrieves tasks based on the specified month and year with pagination
+func (r *TaskRepository) GetByMonthAndYear(month int, year int, page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
 	currentTasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page-1)*pageSize).
@@ -142,15 +108,14 @@ func (r *TaskRepository) GetByMonthAndYear(month int, year int, page int, pageSi
 		).Find(ctx)
 
 	if err != nil {
-		return models.PaginatedDTO{}
+		return []models.Task{}
 	}
 
-	total := len(currentTasks)
-
-	return models.ToPaginatedDTO(currentTasks, total, pageSize, pageSize)
+	return currentTasks
 }
 
-func (r *TaskRepository) GetByCreatedDate(day int, month int, year int, page int, pageSize int) models.PaginatedDTO {
+// Retrieves tasks based on the specified created date, month, and year with pagination
+func (r *TaskRepository) GetByCreatedDate(day int, month int, year int, page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
 	currentTasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page-1)*pageSize).
@@ -159,16 +124,15 @@ func (r *TaskRepository) GetByCreatedDate(day int, month int, year int, page int
 		).Find(ctx)
 
 	if err != nil {
-		return models.PaginatedDTO{}
+		return []models.Task{}
 	}
 
-	total := len(currentTasks)
-
-	return models.ToPaginatedDTO(currentTasks, total, pageSize, pageSize)
+	return currentTasks
 
 }
 
-func (r *TaskRepository) SearchByName(name string, page int, pageSize int) models.PaginatedDTO {
+// Searches for tasks by name with pagination
+func (r *TaskRepository) SearchByName(name string, page int, pageSize int) []models.Task {
 
 	ctx := context.Background()
 
@@ -177,10 +141,8 @@ func (r *TaskRepository) SearchByName(name string, page int, pageSize int) model
 		Find(ctx)
 
 	if err != nil {
-		return models.PaginatedDTO{}
+		return []models.Task{}
 	}
 
-	total := len(currentTasks)
-
-	return models.ToPaginatedDTO(currentTasks, total, pageSize, pageSize)
+	return currentTasks
 }

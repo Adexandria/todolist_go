@@ -6,6 +6,7 @@ import (
 	"go.uber.org/dig"
 )
 
+// CreateContainer sets up the dependency injection container with all necessary services and repositories
 func CreateContainer() *dig.Container {
 	container := RegisterDb()
 

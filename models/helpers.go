@@ -2,6 +2,7 @@ package models
 
 import "fmt"
 
+// Maps a Task model to a TaskDTO
 func mapTaskToDTO(task Task) TaskPaginationDTO {
 	var dueDate string
 
@@ -17,6 +18,7 @@ func mapTaskToDTO(task Task) TaskPaginationDTO {
 	}
 }
 
+// Converts a slice of Task models to a PaginatedDTO containing TaskPaginationDTOs
 func ToPaginatedDTO(tasks []Task, total int, page int, pageSize int) PaginatedDTO {
 	var dtos []TaskPaginationDTO
 	for _, task := range tasks {
