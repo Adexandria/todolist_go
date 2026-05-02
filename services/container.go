@@ -2,6 +2,8 @@ package services
 
 import (
 	"SM/repositories"
+	"log/slog"
+	"os"
 
 	"go.uber.org/dig"
 )
@@ -20,5 +22,13 @@ func CreateContainer() *dig.Container {
 		panic(err)
 	}
 
+	err = container.Provide(generateHandler)
+	if err != nil {
+		panic(err)
+	}
 	return container
+}
+
+func generateHandler() *slog.JSONHandler {
+	return slog.NewJSONHandler(os.Stderr, nil)
 }
