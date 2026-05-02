@@ -1,0 +1,279 @@
+openapi: 3.0.3
+info:
+  title: "Todo list application"
+  version: "1.0.0"
+
+tags:
+  - name: Tasks
+    description: "Tasks management endpoints"
+paths:
+  /api/tasks/{id}:
+    get:
+      tags:
+        - Tasks
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 1
+            description: Id of the task
+      summary: "Get a particular task by id"
+      operationId: "GetTaskById"
+      responses:
+        '200':
+          description: "A task"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+        '404':
+          description: "If the task doesn't exist"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+    put:
+      tags:
+        - Tasks
+      summary: "Updates a particular task"
+      operationId: "UpdateTask"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 1
+            description: Id of the task
+      requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: Learn about golang
+                  description:
+                    type: string
+                    example: Learn about inheritance
+                  due_date:
+                    type: string
+                    example: 2006-01-02 15:04:05
+
+      responses:
+        '200':
+          description: "If created successfully"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+        '404':
+          description: "If the task doesn't exist"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+        '400':
+          description: "If the request fails"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+    delete:
+      tags:
+        - Tasks
+      summary: "Deletes a particular task"
+      operationId: "DeleteTask"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: 1
+            description: Id of the task
+      responses:
+        '200':
+          description: "If created successfully"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+        '404':
+          description: "If the task doesn't exist"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+        '400':
+          description: "If the request fails"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+  /api/tasks:
+    get:
+      tags:
+        - Tasks
+      summary: "Get tasks by page and page size"
+      operationId: "GetAllTasks"
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "1"
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+             type: string
+             default: "20"
+      responses:
+        '200':
+          description: "Get all tasks"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+    post:
+      tags:
+        - Tasks
+      summary: "Creates a new task"
+      operationId: "CreateTask"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Learn about golang
+                description:
+                  type: string
+                  example: Learn about inheritance
+                due_date:
+                  type: string
+                  example: 2006-01-02 15:04:05
+      responses:
+        '200':
+          description: "Object Id"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+        '400':
+          description: "If the request fails"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/tasks/filter:
+    get:
+      tags:
+        - Tasks
+      summary: "Get Tasks by filter either by year, month and day"
+      operationId: "FilterTasks"
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "1"
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "20"
+        - name: year
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "2026"
+        - name: month
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "02"
+        - name: day
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "11"
+      responses:
+        '200':
+          description: "Returns a list of tasks"
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+
+  /api/task/search:
+    get:
+      tags:
+        - Tasks
+      summary: "Search tasks by name"
+      operationId: "SearchByTask"
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "1"
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "20"
+        - name: name
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "Learn"
+      responses:
+        '200':
+          description: "A list of tasks"
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ActionResultModel'
+
+
+components:
+  schemas:
+    ActionResult:
+      type: object
+      properties:
+        StatusCode:
+          type: integer
+        IsSuccess:
+          type: boolean
+        Error:
+          type: array
+
+    ActionResultModel:
+      type: object
+      properties:
+        Data:
+          type: object
+        StatusCode:
+          type: integer
+        IsSuccess:
+          type: boolean
+        Error:
+          type: array
