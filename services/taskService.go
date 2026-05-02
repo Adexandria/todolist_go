@@ -81,7 +81,7 @@ func (t *TaskService) GetAllTasks(page int, pageSize int) models.PaginatedDTO {
 
 	total = len(tasks)
 
-	return models.ToPaginatedDTO(tasks, total, pageSize, pageSize)
+	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
 
 // Retrieves a task by its id
@@ -110,7 +110,7 @@ func (t *TaskService) GetTaskByMonthAndYear(month int, year int, page int, pageS
 
 	total = len(tasks)
 
-	return models.ToPaginatedDTO(tasks, total, pageSize, pageSize)
+	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
 
 // Retrieves tasks based on the created date with pagination
@@ -121,7 +121,7 @@ func (t *TaskService) GetTaskByCreatedDate(date int, month int, year int, page i
 
 	total = len(tasks)
 
-	return models.ToPaginatedDTO(tasks, total, pageSize, pageSize)
+	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
 
 // Retrieves tasks based on the specified year with pagination
@@ -132,7 +132,7 @@ func (t *TaskService) GetTaskByYear(year int, page int, pageSize int) models.Pag
 
 	total = len(tasks)
 
-	return models.ToPaginatedDTO(tasks, total, pageSize, pageSize)
+	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
 
 // Searches for tasks by name with paginations
@@ -143,5 +143,5 @@ func (t *TaskService) SearchTaskByName(name string, page int, pageSize int) mode
 
 	total = len(tasks)
 
-	return models.ToPaginatedDTO(tasks, total, pageSize, pageSize)
+	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }

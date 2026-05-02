@@ -4,19 +4,22 @@ import (
 	"SM/models"
 	"context"
 	"fmt"
+	"log/slog"
 
 	"gorm.io/gorm"
 )
 
 type TaskRepository struct {
-	Db *gorm.DB
+	Db  *gorm.DB
+	Log *slog.Logger
 }
 
 // Constructor function to create a new TaskRepository instance with the provided database connection
 
-func TaskRepo(db *gorm.DB) *TaskRepository {
+func TaskRepo(db *gorm.DB, jsonHandler *slog.JSONHandler) *TaskRepository {
 	return &TaskRepository{
-		Db: db,
+		Db:  db,
+		Log: slog.New(jsonHandler),
 	}
 }
 
@@ -31,6 +34,7 @@ func (r *TaskRepository) Create(newTask *models.Task) (uint, string) {
 	err := gorm.G[models.Task](r.Db).Create(ctx, newTask)
 
 	if err != nil {
+		r.Log.Error(err.Error())
 		return 0, err.Error()
 	}
 
@@ -45,6 +49,7 @@ func (r *TaskRepository) Update(id int, updateTask *models.Task) bool {
 	_, err := gorm.G[models.Task](r.Db).Where("id = ?", id).Updates(ctx, *updateTask)
 
 	if err != nil {
+		r.Log.Error("Failed to update task: " + err.Error())
 		return false
 	}
 
@@ -55,7 +60,12 @@ func (r *TaskRepository) Update(id int, updateTask *models.Task) bool {
 func (r *TaskRepository) Delete(id int) bool {
 	ctx := context.Background()
 	_, err := gorm.G[models.Task](r.Db).Where("id = ?", id).Delete(ctx)
-	return err == nil
+	if err != nil {
+		r.Log.Error("Failed to delete task: " + err.Error())
+		return false
+	}
+
+	return true
 }
 
 // Retrieves a task by its ID
@@ -63,6 +73,7 @@ func (r *TaskRepository) Get(id int) models.Task {
 	ctx := context.Background()
 	currentTask, err := gorm.G[models.Task](r.Db).Where("id = ?", id).First(ctx)
 	if err != nil {
+		r.Log.Error("Failed to get task: " + err.Error())
 		return models.Task{}
 	}
 
@@ -76,7 +87,7 @@ func (r *TaskRepository) GetAll(page int, pageSize int) []models.Task {
 	tasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page - 1) * pageSize).Order("created_at").Find(ctx)
 
 	if err != nil {
-		fmt.Println(err)
+		r.Log.Error("Failed to get all tasks" + err.Error())
 		return []models.Task{}
 	}
 	return tasks
@@ -91,6 +102,7 @@ func (r *TaskRepository) GetByYear(year int, page int, pageSize int) []models.Ta
 		Where("strftime('%Y', created_at) = ?", fmt.Sprintf("%d", year)).Find(ctx)
 
 	if err != nil {
+		r.Log.Error("Failed to get task by year" + err.Error())
 		return []models.Task{}
 	}
 
@@ -108,6 +120,7 @@ func (r *TaskRepository) GetByMonthAndYear(month int, year int, page int, pageSi
 		).Find(ctx)
 
 	if err != nil {
+		r.Log.Error("Failed to get task by month and year" + err.Error())
 		return []models.Task{}
 	}
 
@@ -124,6 +137,7 @@ func (r *TaskRepository) GetByCreatedDate(day int, month int, year int, page int
 		).Find(ctx)
 
 	if err != nil {
+		r.Log.Error("Failed to get task by date" + err.Error())
 		return []models.Task{}
 	}
 
@@ -141,6 +155,7 @@ func (r *TaskRepository) SearchByName(name string, page int, pageSize int) []mod
 		Find(ctx)
 
 	if err != nil {
+		r.Log.Error("Failed to get task by name" + err.Error())
 		return []models.Task{}
 	}
 
