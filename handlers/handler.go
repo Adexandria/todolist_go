@@ -26,52 +26,25 @@ func (h *Handler) GetTaskById(c *gin.Context) {
 	val, _ := strconv.Atoi(id)
 	currentTask := h.Service.GetTaskById(val)
 	if currentTask == (models.TaskDTO{}) {
-		c.JSON(http.StatusNotFound, services.ActionResult{
-			StatusCode: http.StatusNotFound,
-			IsSuccess:  false,
-			Error: []string{
-				"Task not found",
-			},
-		})
+		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
 	}
-	c.JSON(http.StatusOK, services.ActionResultModel[models.TaskDTO]{
-		Data: currentTask,
-		ActionResult: services.ActionResult{
-			StatusCode: http.StatusOK,
-			IsSuccess:  true,
-			Error:      nil,
-		},
-	})
+	c.JSON(http.StatusOK, services.SuccessDataResult(currentTask))
 }
 
 // Handler method to create a new task
 func (h *Handler) CreateTask(c *gin.Context) {
 	var createTaskDTO models.CreateTaskDTO
 	if err := c.ShouldBind(&createTaskDTO); err != nil {
-		c.JSON(http.StatusBadRequest, services.ActionResult{
-			StatusCode: http.StatusBadRequest,
-			IsSuccess:  false,
-			Error:      []string{err.Error()},
-		})
+		c.JSON(http.StatusBadRequest, services.BadRequestResult(err.Error()))
+
 	}
 
 	newId, er := h.Service.CreateTask(&createTaskDTO)
 	if er != "" {
-		c.JSON(http.StatusBadRequest, services.ActionResult{
-			StatusCode: http.StatusBadRequest,
-			IsSuccess:  false,
-			Error:      []string{er},
-		})
+		c.JSON(http.StatusBadRequest, services.BadRequestResult(er))
 	}
 
-	c.JSON(http.StatusOK, services.ActionResultModel[uint]{
-		Data: newId,
-		ActionResult: services.ActionResult{
-			StatusCode: http.StatusOK,
-			IsSuccess:  true,
-			Error:      nil,
-		},
-	})
+	c.JSON(http.StatusOK, services.SuccessDataResult[uint](newId))
 
 }
 
@@ -79,40 +52,20 @@ func (h *Handler) CreateTask(c *gin.Context) {
 func (h *Handler) UpdateTask(c *gin.Context) {
 	var updateTaskDTO models.UpdateTaskDTO
 	if err := c.ShouldBind(&updateTaskDTO); err != nil {
-		c.JSON(http.StatusBadRequest, services.ActionResult{
-			StatusCode: http.StatusBadRequest,
-			IsSuccess:  false,
-			Error:      []string{err.Error()},
-		})
+		c.JSON(http.StatusBadRequest, services.BadRequestResult(err.Error()))
 	}
 	id := c.Param("id")
 	val, _ := strconv.Atoi(id)
 	currentTask := h.Service.GetTaskById(val)
 	if currentTask == (models.TaskDTO{}) {
-		c.JSON(http.StatusNotFound, services.ActionResult{
-			StatusCode: http.StatusNotFound,
-			IsSuccess:  false,
-			Error: []string{
-				"Task not found",
-			},
-		})
+		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
 
 	}
 	isUpdated := h.Service.UpdateTask(val, &updateTaskDTO)
 	if isUpdated {
-		c.JSON(http.StatusOK, services.ActionResult{
-			StatusCode: http.StatusOK,
-			IsSuccess:  true,
-			Error:      nil,
-		})
+		c.JSON(http.StatusOK, services.SuccessResult())
 	}
-	c.JSON(http.StatusBadRequest, services.ActionResult{
-		StatusCode: http.StatusBadRequest,
-		IsSuccess:  false,
-		Error: []string{
-			"Failed to update task",
-		},
-	})
+	c.JSON(http.StatusBadRequest, services.BadRequestResult("Failed to update task"))
 }
 
 // Handler method to delete a task by its ID
@@ -121,31 +74,15 @@ func (h *Handler) DeleteTask(c *gin.Context) {
 	val, _ := strconv.Atoi(id)
 	currentTask := h.Service.GetTaskById(val)
 	if currentTask == (models.TaskDTO{}) {
-		c.JSON(http.StatusNotFound, services.ActionResult{
-			StatusCode: http.StatusNotFound,
-			IsSuccess:  false,
-			Error: []string{
-				"Task not found",
-			},
-		})
+		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
 
 	}
 	isDeleted := h.Service.DeleteTask(val)
 	if isDeleted {
-		c.JSON(http.StatusOK, services.ActionResult{
-			StatusCode: http.StatusOK,
-			IsSuccess:  true,
-			Error:      nil,
-		})
+		c.JSON(http.StatusOK, services.SuccessResult())
 
 	}
-	c.JSON(http.StatusBadRequest, services.ActionResult{
-		StatusCode: http.StatusBadRequest,
-		IsSuccess:  false,
-		Error: []string{
-			"Failed to delete task",
-		},
-	})
+	c.JSON(http.StatusBadRequest, services.BadRequestResult("Failed to delete task"))
 }
 
 // Handler method to retrieve all tasks with pagination
@@ -156,14 +93,7 @@ func (h *Handler) GetAllTasks(c *gin.Context) {
 
 	allTasks := h.Service.GetAllTasks(page, pageSize)
 
-	c.JSON(http.StatusOK, services.ActionResultModel[models.PaginatedDTO]{
-		Data: allTasks,
-		ActionResult: services.ActionResult{
-			StatusCode: http.StatusOK,
-			IsSuccess:  true,
-			Error:      nil,
-		},
-	})
+	c.JSON(http.StatusOK, services.SuccessDataResult(allTasks))
 }
 
 // Handler method to filter tasks based on query parameters such as year, month, and day
@@ -179,14 +109,7 @@ func (h *Handler) FilterTasks(c *gin.Context) {
 		m, _ := strconv.Atoi(month)
 		d, _ := strconv.Atoi(day)
 		tasks := h.Service.GetTaskByCreatedDate(d, m, y, page, pageSize)
-		c.JSON(http.StatusOK, services.ActionResultModel[models.PaginatedDTO]{
-			Data: tasks,
-			ActionResult: services.ActionResult{
-				StatusCode: http.StatusOK,
-				IsSuccess:  true,
-				Error:      nil,
-			},
-		})
+		c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 		return
 	}
 
@@ -194,41 +117,20 @@ func (h *Handler) FilterTasks(c *gin.Context) {
 		y, _ := strconv.Atoi(year)
 		m, _ := strconv.Atoi(month)
 		tasks := h.Service.GetTaskByMonthAndYear(m, y, page, pageSize)
-		c.JSON(http.StatusOK, services.ActionResultModel[models.PaginatedDTO]{
-			Data: tasks,
-			ActionResult: services.ActionResult{
-				StatusCode: http.StatusOK,
-				IsSuccess:  true,
-				Error:      nil,
-			},
-		})
+		c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 		return
 	}
 
 	if year != "" {
 		y, _ := strconv.Atoi(year)
 		tasks := h.Service.GetTaskByYear(y, page, pageSize)
-		c.JSON(http.StatusOK, services.ActionResultModel[models.PaginatedDTO]{
-			Data: tasks,
-			ActionResult: services.ActionResult{
-				StatusCode: http.StatusOK,
-				IsSuccess:  true,
-				Error:      nil,
-			},
-		})
+		c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 		return
 
 	}
 
 	tasks := h.Service.GetAllTasks(page, pageSize)
-	c.JSON(http.StatusOK, services.ActionResultModel[models.PaginatedDTO]{
-		Data: tasks,
-		ActionResult: services.ActionResult{
-			StatusCode: http.StatusOK,
-			IsSuccess:  true,
-			Error:      nil,
-		},
-	})
+	c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 }
 
 // Handler method to search for tasks by name with pagination
@@ -239,13 +141,6 @@ func (h *Handler) SearchByTask(c *gin.Context) {
 
 	tasks := h.Service.SearchTaskByName(name, page, pageSize)
 
-	c.JSON(http.StatusOK, services.ActionResultModel[models.PaginatedDTO]{
-		Data: tasks,
-		ActionResult: services.ActionResult{
-			StatusCode: http.StatusOK,
-			IsSuccess:  true,
-			Error:      nil,
-		},
-	})
+	c.JSON(http.StatusOK, services.SuccessDataResult[models.PaginatedDTO](tasks))
 
 }
