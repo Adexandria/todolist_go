@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Handler struct {
@@ -24,7 +25,12 @@ func TaskHandler(service *services.TaskService) *Handler {
 func (h *Handler) GetTaskById(c *gin.Context) {
 	id := c.Param("id")
 	val, _ := strconv.Atoi(id)
-	currentTask := h.Service.GetTaskById(val)
+
+	claimsString, _ := c.Get("claims")
+	claims := claimsString.(jwt.MapClaims)
+	userId := claims["user_id"].(int)
+
+	currentTask := h.Service.GetTaskById(userId, val)
 	if currentTask == (models.TaskDTO{}) {
 		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
 	}
@@ -39,7 +45,11 @@ func (h *Handler) CreateTask(c *gin.Context) {
 
 	}
 
-	newId, er := h.Service.CreateTask(&createTaskDTO)
+	claimsString, _ := c.Get("claims")
+	claims := claimsString.(jwt.MapClaims)
+	userId := claims["user_id"].(int)
+
+	newId, er := h.Service.CreateTask(userId, &createTaskDTO)
 	if er != "" {
 		c.JSON(http.StatusBadRequest, services.BadRequestResult(er))
 	}
@@ -56,12 +66,17 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 	}
 	id := c.Param("id")
 	val, _ := strconv.Atoi(id)
-	currentTask := h.Service.GetTaskById(val)
+
+	claimsString, _ := c.Get("claims")
+	claims := claimsString.(jwt.MapClaims)
+	userId := claims["user_id"].(int)
+
+	currentTask := h.Service.GetTaskById(userId, val)
 	if currentTask == (models.TaskDTO{}) {
 		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
 
 	}
-	isUpdated := h.Service.UpdateTask(val, &updateTaskDTO)
+	isUpdated := h.Service.UpdateTask(userId, val, &updateTaskDTO)
 	if isUpdated {
 		c.JSON(http.StatusOK, services.SuccessResult())
 	}
@@ -72,12 +87,17 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 func (h *Handler) DeleteTask(c *gin.Context) {
 	id := c.Param("id")
 	val, _ := strconv.Atoi(id)
-	currentTask := h.Service.GetTaskById(val)
+
+	claimsString, _ := c.Get("claims")
+	claims := claimsString.(jwt.MapClaims)
+	userId := claims["user_id"].(int)
+
+	currentTask := h.Service.GetTaskById(userId, val)
 	if currentTask == (models.TaskDTO{}) {
 		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
 
 	}
-	isDeleted := h.Service.DeleteTask(val)
+	isDeleted := h.Service.DeleteTask(userId, val)
 	if isDeleted {
 		c.JSON(http.StatusOK, services.SuccessResult())
 
@@ -87,17 +107,26 @@ func (h *Handler) DeleteTask(c *gin.Context) {
 
 // Handler method to retrieve all tasks with pagination
 func (h *Handler) GetAllTasks(c *gin.Context) {
+	claimsString, _ := c.Get("claims")
+	claims := claimsString.(jwt.MapClaims)
+	userId := claims["user_id"].(int)
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 
-	allTasks := h.Service.GetAllTasks(page, pageSize)
+	allTasks := h.Service.GetAllTasks(userId, page, pageSize)
 
 	c.JSON(http.StatusOK, services.SuccessDataResult(allTasks))
 }
 
 // Handler method to filter tasks based on query parameters such as year, month, and day
 func (h *Handler) FilterTasks(c *gin.Context) {
+
+	claimsString, _ := c.Get("claims")
+	claims := claimsString.(jwt.MapClaims)
+	userId := claims["user_id"].(int)
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 	year := c.Query("year")
@@ -108,7 +137,7 @@ func (h *Handler) FilterTasks(c *gin.Context) {
 		y, _ := strconv.Atoi(year)
 		m, _ := strconv.Atoi(month)
 		d, _ := strconv.Atoi(day)
-		tasks := h.Service.GetTaskByCreatedDate(d, m, y, page, pageSize)
+		tasks := h.Service.GetTaskByCreatedDate(userId, d, m, y, page, pageSize)
 		c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 		return
 	}
@@ -116,30 +145,34 @@ func (h *Handler) FilterTasks(c *gin.Context) {
 	if year != "" && month != "" {
 		y, _ := strconv.Atoi(year)
 		m, _ := strconv.Atoi(month)
-		tasks := h.Service.GetTaskByMonthAndYear(m, y, page, pageSize)
+		tasks := h.Service.GetTaskByMonthAndYear(userId, m, y, page, pageSize)
 		c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 		return
 	}
 
 	if year != "" {
 		y, _ := strconv.Atoi(year)
-		tasks := h.Service.GetTaskByYear(y, page, pageSize)
+		tasks := h.Service.GetTaskByYear(userId, y, page, pageSize)
 		c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 		return
 
 	}
 
-	tasks := h.Service.GetAllTasks(page, pageSize)
+	tasks := h.Service.GetAllTasks(userId, page, pageSize)
 	c.JSON(http.StatusOK, services.SuccessDataResult(tasks))
 }
 
 // Handler method to search for tasks by name with pagination
 func (h *Handler) SearchByTask(c *gin.Context) {
+	claimsString, _ := c.Get("claims")
+	claims := claimsString.(jwt.MapClaims)
+	userId := claims["user_id"].(int)
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 	name := c.Query("name")
 
-	tasks := h.Service.SearchTaskByName(name, page, pageSize)
+	tasks := h.Service.SearchTaskByName(userId, name, page, pageSize)
 
 	c.JSON(http.StatusOK, services.SuccessDataResult[models.PaginatedDTO](tasks))
 
