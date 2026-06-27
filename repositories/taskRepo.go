@@ -57,9 +57,9 @@ func (r *TaskRepository) Update(id int, updateTask *models.Task) bool {
 }
 
 // Deletes a task by its ID
-func (r *TaskRepository) Delete(id int) bool {
+func (r *TaskRepository) Delete(userId int, id int) bool {
 	ctx := context.Background()
-	_, err := gorm.G[models.Task](r.Db).Where("id = ?", id).Delete(ctx)
+	_, err := gorm.G[models.Task](r.Db).Where("id = ? AND user_id = ?", id, userId).Delete(ctx)
 	if err != nil {
 		r.Log.Error("Failed to delete task: " + err.Error())
 		return false
@@ -69,9 +69,9 @@ func (r *TaskRepository) Delete(id int) bool {
 }
 
 // Retrieves a task by its ID
-func (r *TaskRepository) Get(id int) models.Task {
+func (r *TaskRepository) Get(userId int, id int) models.Task {
 	ctx := context.Background()
-	currentTask, err := gorm.G[models.Task](r.Db).Where("id = ?", id).First(ctx)
+	currentTask, err := gorm.G[models.Task](r.Db).Where("id = ? AND user_id = ?", id, userId).First(ctx)
 	if err != nil {
 		r.Log.Error("Failed to get task: " + err.Error())
 		return models.Task{}
@@ -81,10 +81,10 @@ func (r *TaskRepository) Get(id int) models.Task {
 }
 
 // Retrieves all tasks with pagination
-func (r *TaskRepository) GetAll(page int, pageSize int) []models.Task {
+func (r *TaskRepository) GetAll(userId int, page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
-	tasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page - 1) * pageSize).Order("created_at").Find(ctx)
+	tasks, err := gorm.G[models.Task](r.Db).Where("user_id = ?", userId).Limit(pageSize).Offset((page - 1) * pageSize).Order("created_at").Find(ctx)
 
 	if err != nil {
 		r.Log.Error("Failed to get all tasks" + err.Error())
@@ -95,10 +95,10 @@ func (r *TaskRepository) GetAll(page int, pageSize int) []models.Task {
 }
 
 // Retrieves tasks based on the specified year with pagination
-func (r *TaskRepository) GetByYear(year int, page int, pageSize int) []models.Task {
+func (r *TaskRepository) GetByYear(userId int, year int, page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
-	currentTasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page-1)*pageSize).
+	currentTasks, err := gorm.G[models.Task](r.Db).Where("user_id = ?", userId).Limit(pageSize).Offset((page-1)*pageSize).
 		Where("strftime('%Y', created_at) = ?", fmt.Sprintf("%d", year)).Find(ctx)
 
 	if err != nil {
@@ -110,10 +110,10 @@ func (r *TaskRepository) GetByYear(year int, page int, pageSize int) []models.Ta
 }
 
 // Retrieves tasks based on the specified month and year with pagination
-func (r *TaskRepository) GetByMonthAndYear(month int, year int, page int, pageSize int) []models.Task {
+func (r *TaskRepository) GetByMonthAndYear(userId int, month int, year int, page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
-	currentTasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page-1)*pageSize).
+	currentTasks, err := gorm.G[models.Task](r.Db).Where("userid = ?", userId).Limit(pageSize).Offset((page-1)*pageSize).
 		Where("strftime('%Y', created_at) = ? AND strftime('%m', created_at) = ?",
 			fmt.Sprintf("%d", year),
 			fmt.Sprintf("%02d", month),
@@ -128,12 +128,12 @@ func (r *TaskRepository) GetByMonthAndYear(month int, year int, page int, pageSi
 }
 
 // Retrieves tasks based on the specified created date, month, and year with pagination
-func (r *TaskRepository) GetByCreatedDate(day int, month int, year int, page int, pageSize int) []models.Task {
+func (r *TaskRepository) GetByCreatedDate(userId int, day int, month int, year int, page int, pageSize int) []models.Task {
 	ctx := context.Background()
 
 	currentTasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page-1)*pageSize).
-		Where("strftime('%Y-%m-%d', created_at) = ?",
-			fmt.Sprintf("%d-%02d-%02d", year, month, day),
+		Where("strftime('%Y-%m-%d', created_at) = ? AND user_id = ?",
+			fmt.Sprintf("%d-%02d-%02d", year, month, day), userId,
 		).Find(ctx)
 
 	if err != nil {
@@ -146,12 +146,12 @@ func (r *TaskRepository) GetByCreatedDate(day int, month int, year int, page int
 }
 
 // Searches for tasks by name with pagination
-func (r *TaskRepository) SearchByName(name string, page int, pageSize int) []models.Task {
+func (r *TaskRepository) SearchByName(userId int, name string, page int, pageSize int) []models.Task {
 
 	ctx := context.Background()
 
 	currentTasks, err := gorm.G[models.Task](r.Db).Limit(pageSize).Offset((page-1)*pageSize).
-		Where("LOWER(name) LIKE LOWER(?)", name+"%").
+		Where("LOWER(name) LIKE LOWER(?) AND user_id = ?", name+"%", userId).
 		Find(ctx)
 
 	if err != nil {

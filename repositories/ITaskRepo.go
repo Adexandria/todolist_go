@@ -12,23 +12,23 @@ type Tasker interface {
 	Update(id int, dto *models.Task) bool
 
 	// Deletes a task by its ID
-	Delete(id int) bool
+	Delete(userId int, id int) bool
 
 	// Retrieves a task by its ID
-	Get(id int) models.Task
+	Get(userId int, id int) models.Task
 
 	// Retrieves all tasks with pagination
-	GetAll(page int, pageSize int) []models.Task
+	GetAll(userId int, page int, pageSize int) []models.Task
 
 	// Retrieves tasks based on the specified year with pagination
-	GetByYear(year int, page int, pageSize int) []models.Task
+	GetByYear(userId int, year int, page int, pageSize int) []models.Task
 
 	// Retrieves tasks based on the specified month and year with pagination
-	GetByMonthAndYear(month int, year int, page int, pageSize int) []models.Task
+	GetByMonthAndYear(userId int, month int, year int, page int, pageSize int) []models.Task
 
 	// Retrieves tasks based on the specified created date, month, and year with pagination
-	GetByCreatedDate(day int, month int, year int, page int, pageSize int) []models.Task
+	GetByCreatedDate(userId int, day int, month int, year int, page int, pageSize int) []models.Task
 
 	// Searches for tasks by name with pagination
-	SearchByName(name string, page int, pageSize int) []models.Task
+	SearchByName(userId int, name string, page int, pageSize int) []models.Task
 }
