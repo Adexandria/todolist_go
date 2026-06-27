@@ -1,4 +1,4 @@
-openapi: 3.0.3
+2openapi: 3.0.3
 info:
   title: "Todo list application"
   version: "1.0.0"
