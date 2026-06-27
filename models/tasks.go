@@ -55,4 +55,5 @@ type Task struct {
 	CreatedAt   time.Time `Gorm:"autoCreateTime"`
 	DueDate     *time.Time
 	UpdatedAt   time.Time `Gorm:"autoUpdateTime"`
+	UserID      uint
 }
