@@ -2,6 +2,7 @@ package services
 
 import (
 	"SM/repositories"
+	"SM/repositories/Utilities"
 	"log/slog"
 	"os"
 
@@ -12,7 +13,12 @@ import (
 func CreateContainer() *dig.Container {
 	container := RegisterDb()
 
-	err := container.Provide(repositories.TaskRepo)
+	err := container.Provide(generateHandler)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(repositories.TaskRepo)
 	if err != nil {
 		panic(err)
 	}
@@ -22,10 +28,35 @@ func CreateContainer() *dig.Container {
 		panic(err)
 	}
 
-	err = container.Provide(generateHandler)
+	err = container.Provide(repositories.UserRepoCon)
 	if err != nil {
 		panic(err)
 	}
+	err = container.Provide(Utilities.TokenManagerCons)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(Utilities.PasswordManagerCons)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(UserServiceCon)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(AuthenticationServiceCons)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(AuthenticationServiceCons)
+	if err != nil {
+		panic(err)
+	}
+
 	return container
 }
 
