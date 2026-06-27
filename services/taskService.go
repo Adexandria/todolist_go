@@ -22,11 +22,12 @@ func TaskServiceCon(taskRepo *repositories.TaskRepository) *TaskService {
 var _ ITaskService = (*TaskService)(nil)
 
 // Creates a new task
-func (t *TaskService) CreateTask(dto *models.CreateTaskDTO) (uint, string) {
+func (t *TaskService) CreateTask(userId int, dto *models.CreateTaskDTO) (uint, string) {
 	newTask := &models.Task{
 		Description: dto.Description,
 		Name:        dto.Name,
 		CreatedAt:   time.Now(),
+		UserID:      uint(userId),
 	}
 	if dto.DueDate != "" {
 		t, err := time.Parse("2006-01-02 15:04:05", dto.DueDate)
@@ -40,8 +41,8 @@ func (t *TaskService) CreateTask(dto *models.CreateTaskDTO) (uint, string) {
 }
 
 // Updates existing task by id
-func (t *TaskService) UpdateTask(id int, dto *models.UpdateTaskDTO) bool {
-	currentTask := t.repo.Get(id)
+func (t *TaskService) UpdateTask(userId int, id int, dto *models.UpdateTaskDTO) bool {
+	currentTask := t.repo.Get(userId, id)
 
 	if currentTask == (models.Task{}) {
 		return false
@@ -64,18 +65,18 @@ func (t *TaskService) UpdateTask(id int, dto *models.UpdateTaskDTO) bool {
 }
 
 // Deletes a task by id
-func (t *TaskService) DeleteTask(id int) bool {
-	currentTask := t.repo.Get(id)
+func (t *TaskService) DeleteTask(userId int, id int) bool {
+	currentTask := t.repo.Get(userId, id)
 
 	if currentTask == (models.Task{}) {
 		return false
 	}
-	return t.repo.Delete(id)
+	return t.repo.Delete(userId, id)
 }
 
 // Retrieves all tasks with pagination
-func (t *TaskService) GetAllTasks(page int, pageSize int) models.PaginatedDTO {
-	tasks := t.repo.GetAll(page, pageSize)
+func (t *TaskService) GetAllTasks(userId int, page int, pageSize int) models.PaginatedDTO {
+	tasks := t.repo.GetAll(userId, page, pageSize)
 
 	var total int
 
@@ -85,8 +86,8 @@ func (t *TaskService) GetAllTasks(page int, pageSize int) models.PaginatedDTO {
 }
 
 // Retrieves a task by its id
-func (t *TaskService) GetTaskById(id int) models.TaskDTO {
-	currentTask := t.repo.Get(id)
+func (t *TaskService) GetTaskById(userId int, id int) models.TaskDTO {
+	currentTask := t.repo.Get(userId, id)
 
 	var dueDate string
 
@@ -103,8 +104,8 @@ func (t *TaskService) GetTaskById(id int) models.TaskDTO {
 }
 
 // Retrieves tasks based on the specified month and year with pagination
-func (t *TaskService) GetTaskByMonthAndYear(month int, year int, page int, pageSize int) models.PaginatedDTO {
-	tasks := t.repo.GetByMonthAndYear(month, year, page, pageSize)
+func (t *TaskService) GetTaskByMonthAndYear(userId int, month int, year int, page int, pageSize int) models.PaginatedDTO {
+	tasks := t.repo.GetByMonthAndYear(userId, month, year, page, pageSize)
 
 	var total int
 
@@ -114,8 +115,8 @@ func (t *TaskService) GetTaskByMonthAndYear(month int, year int, page int, pageS
 }
 
 // Retrieves tasks based on the created date with pagination
-func (t *TaskService) GetTaskByCreatedDate(date int, month int, year int, page int, pageSize int) models.PaginatedDTO {
-	tasks := t.repo.GetByCreatedDate(date, month, year, page, pageSize)
+func (t *TaskService) GetTaskByCreatedDate(userId int, date int, month int, year int, page int, pageSize int) models.PaginatedDTO {
+	tasks := t.repo.GetByCreatedDate(userId, date, month, year, page, pageSize)
 
 	var total int
 
@@ -125,8 +126,8 @@ func (t *TaskService) GetTaskByCreatedDate(date int, month int, year int, page i
 }
 
 // Retrieves tasks based on the specified year with pagination
-func (t *TaskService) GetTaskByYear(year int, page int, pageSize int) models.PaginatedDTO {
-	tasks := t.repo.GetByYear(year, page, pageSize)
+func (t *TaskService) GetTaskByYear(userId int, year int, page int, pageSize int) models.PaginatedDTO {
+	tasks := t.repo.GetByYear(userId, year, page, pageSize)
 
 	var total int
 
@@ -136,8 +137,8 @@ func (t *TaskService) GetTaskByYear(year int, page int, pageSize int) models.Pag
 }
 
 // Searches for tasks by name with paginations
-func (t *TaskService) SearchTaskByName(name string, page int, pageSize int) models.PaginatedDTO {
-	tasks := t.repo.SearchByName(name, page, pageSize)
+func (t *TaskService) SearchTaskByName(userId int, name string, page int, pageSize int) models.PaginatedDTO {
+	tasks := t.repo.SearchByName(userId, name, page, pageSize)
 
 	var total int
 
