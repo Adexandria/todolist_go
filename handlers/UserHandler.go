@@ -4,6 +4,7 @@ import (
 	"SM/models"
 	"SM/repositories/Utilities"
 	"SM/services"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -17,13 +18,16 @@ type UserHandler struct {
 	IAuthenticationService services.IAuthenticationService
 	LockoutTrial           string
 	IValidator             Utilities.IValidator
+	IEmailService          services.IEmailService
 }
 
-func UserHandlerCon(userService *services.UserService, authenticationService *services.AuthenticationService, validator *Utilities.Validator) *UserHandler {
+func UserHandlerCon(userService *services.UserService, authenticationService *services.AuthenticationService,
+	validator *Utilities.Validator, emailService *services.EmailService) *UserHandler {
 	return &UserHandler{IUserService: userService,
 		IAuthenticationService: authenticationService,
 		LockoutTrial:           os.Getenv("LockoutTrial"),
-		IValidator:             validator}
+		IValidator:             validator,
+		IEmailService:          emailService}
 }
 
 func (handler *UserHandler) SignUp(c *gin.Context) {
@@ -42,6 +46,27 @@ func (handler *UserHandler) SignUp(c *gin.Context) {
 	}
 
 	result := handler.IUserService.CreateUser(&createUserDTO)
+	if !result.IsSuccess {
+		c.JSON(http.StatusBadRequest, result)
+	}
+
+	emailTokenResult := handler.IAuthenticationService.GenerateEmailResetToken(createUserDTO.Email)
+	if !emailTokenResult.IsSuccess {
+		c.JSON(http.StatusBadRequest, emailTokenResult)
+	}
+	data := map[string]any{
+		"verification_url": fmt.Sprintf("%s/verify_email?token=%s", os.Getenv("BASE_URL"), emailTokenResult.Data),
+	}
+
+	emailTemplate, err := handler.IEmailService.GenerateHTMLTemplate("Welcome", data)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, services.BadRequestResult("Failed to create user"))
+	}
+
+	mailMessage := handler.IEmailService.GenerateMailgunTemplate(os.Getenv("FROM_MAIL"), createUserDTO.Email, "Welcome to Task Manager", emailTemplate)
+
+	handler.IEmailService.SendEmailAsync(mailMessage)
+
 	c.JSON(result.StatusCode, result)
 }
 
@@ -58,14 +83,15 @@ func (handler *UserHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, validatorResult)
 	}
 
-	value := getLockoutCount(c)
+	value := getLockoutCount(c, loginDTO.Username)
 	if value == getInt(handler.LockoutTrial) {
+		// account has been locked notification
 		c.JSON(http.StatusBadRequest, services.BadRequestResult("This user has been locked out"))
 	}
 
 	result := handler.IAuthenticationService.Authenticate(loginDTO.Username, loginDTO.Password)
 	if !result.IsSuccess {
-		c.SetCookie("lockout", strconv.Itoa(value+1), -1, "/", "", true, true)
+		c.SetCookie(fmt.Sprintf("%slockout:", loginDTO.Username), strconv.Itoa(value+1), -1, "/", "", true, true)
 		c.JSON(result.StatusCode, result)
 	}
 
@@ -73,7 +99,12 @@ func (handler *UserHandler) Login(c *gin.Context) {
 		c.SetCookie("token", result.Token, 30, "/", "", true, true)
 
 	}
+
 	c.JSON(result.StatusCode, result)
+}
+
+func (handler *UserHandler) Logout(c *gin.Context) {
+	// clear it.
 }
 
 func (handler *UserHandler) ChangePassword(c *gin.Context) {
@@ -151,6 +182,7 @@ func (handler *UserHandler) ResetPassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, validatorResult)
 	}
 	result := handler.IAuthenticationService.GeneratePasswordResetToken(email)
+	// send email
 	c.JSON(result.StatusCode, result)
 }
 
@@ -422,8 +454,8 @@ func (handler *UserHandler) GetUserById(c *gin.Context) {
 	c.JSON(result.StatusCode, result)
 }
 
-func getLockoutCount(c *gin.Context) int {
-	val, err := c.Cookie("lockout")
+func getLockoutCount(c *gin.Context, username string) int {
+	val, err := c.Cookie(fmt.Sprintf("%slockout:", username))
 	if err != nil {
 		return 0
 	}

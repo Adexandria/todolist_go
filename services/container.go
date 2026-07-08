@@ -57,6 +57,11 @@ func CreateContainer() *dig.Container {
 		panic(err)
 	}
 
+	err = container.Provide(EmailServiceCon)
+	if err != nil {
+		panic(err)
+	}
+
 	return container
 }
 

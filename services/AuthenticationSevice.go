@@ -4,7 +4,9 @@ import (
 	"SM/models"
 	"SM/repositories"
 	"SM/repositories/Utilities"
+	"log/slog"
 	"os"
+	"path"
 	"time"
 
 	"github.com/skip2/go-qrcode"
@@ -16,6 +18,8 @@ type AuthenticationService struct {
 	IPasswordManager Utilities.IPasswordManager
 	ITokenManager    Utilities.ITokenManager
 	SecretKey        string
+	IEmailService    IEmailService
+	Log              *slog.Logger
 }
 
 func (a *AuthenticationService) Authenticate(username string, password string) *AccessResult {
@@ -57,6 +61,21 @@ func (a *AuthenticationService) Authenticate(username string, password string) *
 		return FailAccessResult("Invalid username/password")
 
 	}
+
+	data := map[string]any{
+		"username":    currentUser.Username,
+		"login_time":  time.Now().UTC().Format("2006-01-02 15:04:05"),
+		"secure_link": path.Join(os.Getenv("BASE_URL"), ""),
+	}
+
+	emailTemplate, err := a.IEmailService.GenerateHTMLTemplate("login", data)
+	if err != nil {
+		a.Log.Error(err.Error())
+	}
+
+	mailMessage := a.IEmailService.GenerateMailgunTemplate(os.Getenv("FROM_MAIL"), currentUser.Email, "Login Notification", emailTemplate)
+
+	a.IEmailService.SendEmailAsync(mailMessage)
 
 	return SuccessAccessResult(accessToken, refreshToken)
 }
@@ -262,12 +281,14 @@ func (a *AuthenticationService) VerifyOTP(otp string) *ActionResult {
 }
 
 func AuthenticationServiceCons(userRepository *repositories.UserRepository, passwordManager *Utilities.PasswordManager,
-	tokenManager *Utilities.TokenManager) *AuthenticationService {
+	tokenManager *Utilities.TokenManager, emailService IEmailService, handler *slog.JSONHandler) *AuthenticationService {
 	return &AuthenticationService{
 		IUserRepository:  userRepository,
 		IPasswordManager: passwordManager,
 		ITokenManager:    tokenManager,
 		SecretKey:        os.Getenv("TWOFACTOR_AUTHENTICATION_kEY"),
+		IEmailService:    emailService,
+		Log:              slog.New(handler),
 	}
 }
 
