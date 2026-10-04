@@ -152,8 +152,8 @@ func (t *TokenManager) DecodeToken(token string) (jwt.MapClaims, error) {
 
 	return claims, nil
 }
-func TokenManagerCons(handler *slog.JSONHandler) TokenManager {
-	return TokenManager{
+func TokenManagerCons(handler *slog.JSONHandler) *TokenManager {
+	return &TokenManager{
 		Logger:          slog.New(handler),
 		SecretKey:       os.Getenv("TOKEN_SECRET"),
 		TokenSecretKey:  os.Getenv("SECRET_KEY"),

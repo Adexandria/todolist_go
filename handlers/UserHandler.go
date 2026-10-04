@@ -229,6 +229,8 @@ func (handler *UserHandler) ChangePhonenumber(c *gin.Context) {
 
 	tokenResult := handler.IAuthenticationService.GeneratePhoneNumberResetToken(userId)
 
+	// send to email
+
 	c.JSON(result.StatusCode, tokenResult)
 }
 
@@ -311,7 +313,7 @@ func (handler *UserHandler) DeleteUserAccount(c *gin.Context) {
 
 // delete user - user
 func (handler *UserHandler) DeleteUserById(c *gin.Context) {
-	userId := c.Param("user_id")
+	userId := c.Param("id")
 	id, _ := strconv.Atoi(userId)
 
 	result := handler.IUserService.DeleteUser(id)
@@ -320,7 +322,7 @@ func (handler *UserHandler) DeleteUserById(c *gin.Context) {
 
 // disable lockout user
 func (handler *UserHandler) DisableUserLockout(c *gin.Context) {
-	userId := c.Param("user_id")
+	userId := c.Param("id")
 
 	validatorResult := handler.IValidator.IsNullOrEmpty(userId).Verify()
 
@@ -354,7 +356,8 @@ func (handler *UserHandler) DisableTwoFactorAuthentication(c *gin.Context) {
 	c.JSON(result.StatusCode, result)
 }
 
-func (handler *UserHandler) GenerateOTP(c *gin.Context) {
+// don't expose this
+func (handler *UserHandler) generateOTP(c *gin.Context) {
 	claimsString, _ := c.Get("claims")
 	claims := claimsString.(jwt.MapClaims)
 	userId := claims["user_id"].(int)
@@ -389,16 +392,6 @@ func (handler *UserHandler) VerifyOTP(c *gin.Context) {
 	c.JSON(tokenResult.StatusCode, tokenResult)
 }
 
-// disable two factor authentication
-func (handler *UserHandler) DisableTwoFactorVerification(c *gin.Context) {
-	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
-
-	result := handler.IAuthenticationService.DisableTwoFactorAuthentication(userId)
-	c.JSON(result.StatusCode, result)
-}
-
 // create admin
 func (handler *UserHandler) CreateAdmin(c *gin.Context) {
 	claimsString, _ := c.Get("claims")
@@ -420,7 +413,7 @@ func (handler *UserHandler) ChangeRole(c *gin.Context) {
 	claims := claimsString.(jwt.MapClaims)
 	userId := claims["user_id"].(int)
 
-	role := c.Param("role")
+	role := c.Query("role")
 
 	result := handler.IUserService.ChangeRole(userId, role)
 

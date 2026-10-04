@@ -143,7 +143,7 @@ func (a *AuthenticationService) VerifyEmailResetToken(id int, token string) *Act
 	}
 	isValid := a.ITokenManager.ValidateEmailToken(currentUser.Email, token)
 	if !isValid {
-		return BadRequestResult[string]("Failed to verify email")
+		return BadRequestResult("Failed to verify email")
 	}
 	return SuccessResult()
 }
@@ -281,7 +281,7 @@ func (a *AuthenticationService) VerifyOTP(otp string) *ActionResult {
 }
 
 func AuthenticationServiceCons(userRepository *repositories.UserRepository, passwordManager *Utilities.PasswordManager,
-	tokenManager *Utilities.TokenManager, emailService IEmailService, handler *slog.JSONHandler) *AuthenticationService {
+	tokenManager *Utilities.TokenManager, emailService *EmailService, handler *slog.JSONHandler) *AuthenticationService {
 	return &AuthenticationService{
 		IUserRepository:  userRepository,
 		IPasswordManager: passwordManager,

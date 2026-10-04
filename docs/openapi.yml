@@ -1,4 +1,4 @@
-2openapi: 3.0.3
+openapi: 3.0.0
 info:
   title: "Todo list application"
   version: "1.0.0"
@@ -6,6 +6,12 @@ info:
 tags:
   - name: Tasks
     description: "Tasks management endpoints"
+  - name: Account
+    description: "Handles Account endpoints"
+  - name: Authentication
+    description: "Handles Authentication endpoints"
+  - name: Admin
+    description: "Handles Administrative endpoints"
 paths:
   /api/tasks/{id}:
     get:
@@ -27,13 +33,13 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResultModel'
+                $ref: '#/components/schemas/ActionResultModel'
         '404':
           description: "If the task doesn't exist"
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
     put:
       tags:
         - Tasks
@@ -48,20 +54,20 @@ paths:
             example: 1
             description: Id of the task
       requestBody:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    example: Learn about golang
-                  description:
-                    type: string
-                    example: Learn about inheritance
-                  due_date:
-                    type: string
-                    example: 2006-01-02 15:04:05
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Learn about golang
+                description:
+                  type: string
+                  example: Learn about inheritance
+                due_date:
+                  type: string
+                  example: 2006-01-02 15:04:05
 
       responses:
         '200':
@@ -69,19 +75,19 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
         '404':
           description: "If the task doesn't exist"
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
         '400':
           description: "If the request fails"
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
     delete:
       tags:
         - Tasks
@@ -101,19 +107,19 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
         '404':
           description: "If the task doesn't exist"
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
         '400':
           description: "If the request fails"
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
   /api/tasks:
     get:
       tags:
@@ -131,15 +137,15 @@ paths:
           in: query
           required: false
           schema:
-             type: string
-             default: "20"
+            type: string
+            default: "20"
       responses:
         '200':
           description: "Get all tasks"
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResultModel'
+                $ref: '#/components/schemas/ActionResultModel'
     post:
       tags:
         - Tasks
@@ -166,13 +172,13 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResultModel'
+                $ref: '#/components/schemas/ActionResultModel'
         '400':
           description: "If the request fails"
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResult'
+                $ref: '#/components/schemas/ActionResult'
 
   /api/tasks/filter:
     get:
@@ -217,7 +223,7 @@ paths:
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ActionResultModel'
+                $ref: '#/components/schemas/ActionResultModel'
 
   /api/task/search:
     get:
@@ -250,30 +256,655 @@ paths:
           content:
             application/json:
               schema:
-                items:
+                $ref: '#/components/schemas/ActionResultModel'
+  /api/auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Sign up a new user
+      description: Validates CreateUserDTO, creates a user, generates an email reset token, and sends a welcome email asynchronously.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserDTO'
+      responses:
+        '200':
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+        '400':
+          description: Bad request or validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+
+  /api/auth/login:
+      post:
+        tags:
+          - Authentication
+        summary: Login user
+        description: Authenticates user, checks for lockout based on cookies, and sets a token cookie if two-factor is enabled.
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginDTO'
+        responses:
+          '200':
+            description: Successfully authenticated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/LoginResult'
+          '400':
+            description: Invalid credentials or user locked out
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/auth/logout:
+      post:
+        tags:
+          - Authentication
+        summary: Logout user
+        description: Clears authentication session.
+        responses:
+          '200':
+            description: Successfully logged out
+
+  /api/account/password:
+      put:
+        tags:
+          - Account
+        summary: Change Password
+        description: Changes the password for the currently authenticated user based on JWT claims.
+        security:
+          - BearerAuth: [ ]
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordDTO'
+        responses:
+          '200':
+            description: Password changed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/account/email:
+      put:
+        tags:
+          - Account
+        summary: Change Email
+        description: Updates the user's email and generates a new email reset token. Expects email as a query parameter.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: email
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Email updated and token generated
+            content:
+              application/json:
+                schema:
                   $ref: '#/components/schemas/ActionResultModel'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
 
+  /api/auth/confirm-email:
+      get:
+        tags:
+          - Authentication
+        summary: Confirm Email Token
+        description: Verifies the email token provided in the query string for the authenticated user.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: token
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Email successfully confirmed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Invalid token
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
 
+  /api/auth/reset-password:
+      get:
+        tags:
+          - Authentication
+        summary: Request Password Reset
+        description: Generates a password reset token for the specified email query parameter.
+        parameters:
+          - name: email
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Reset token generated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/auth/reset-password-token:
+      post:
+        tags:
+          - Authentication
+        summary: Reset Password via Token
+        description: Changes an anonymous user's password using a valid token in the query string.
+        parameters:
+          - name: token
+            in: query
+            required: true
+            schema:
+              type: string
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnonymousChangePasswordDTO'
+        responses:
+          '200':
+            description: Password successfully changed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Invalid token or password
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/account/phonenumber:
+      put:
+        tags:
+          - Account
+        summary: Change Phone Number
+        description: Sets a new phone number via query parameter and generates a reset token.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: phonenumber
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Phone number updated and token generated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/account/verify-phonenumber:
+      get:
+        tags:
+          - Account
+        summary: Verify Phone Number Token
+        description: Confirms the phone number using a token query parameter.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: token
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Phone number confirmed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/account:
+    get:
+      tags:
+        - Account
+      summary: Get User Profile
+      description: Retrieves the currently authenticated user's profile based on JWT claims.
+      security:
+        - BearerAuth: [ ]
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResultModel'
+    delete:
+        tags:
+          - Account
+        summary: Delete User Account
+        description: Deletes the currently authenticated user.
+        security:
+          - BearerAuth: [ ]
+        responses:
+          '200':
+            description: User deleted
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/account/firstname:
+      put:
+        tags:
+          - Account
+        summary: Update First Name
+        description: Updates the authenticated user's first name via query parameter.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: firstname
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: First name updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/account/lastname:
+      put:
+        tags:
+          - Account
+        summary: Update Last Name
+        description: Updates the authenticated user's last name via query parameter.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: lastname
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Last name updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/account/username:
+      put:
+        tags:
+          - Account
+        summary: Update Username
+        description: Updates the authenticated user's username via query parameter.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: username
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Username updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/admin/users/{id}:
+      get:
+        tags:
+          - Admin
+        summary: Get User By ID
+        description: Retrieves a user profile by query parameter ID. Verifies OTP before retrieving.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: user_id
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: User retrieved
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+      delete:
+        tags:
+          - Admin
+        summary: Delete User By ID
+        description: Deletes a user by path parameter user_id.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: User deleted
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/admin/users/{id}/disable-lockout:
+      put:
+        tags:
+          - Admin
+        summary: Disable User Lockout
+        description: Disables the lockout state for a specific user using the user_id path parameter.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Lockout disabled
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Validation failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/auth/2fa/setup:
+      post:
+        tags:
+          - Authentication
+        summary: Set Up Two Factor Authentication
+        description: Enables 2FA using the authentication_type defined in the JWT claims.
+        security:
+          - BearerAuth: [ ]
+        responses:
+          '200':
+            description: 2FA setup completed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/auth/2fa/disable:
+      post:
+        tags:
+          - Authentication
+        summary: Disable Two Factor Authentication / Verification
+        description: Disables 2FA for the currently authenticated user.
+        security:
+          - BearerAuth: [ ]
+        responses:
+          '200':
+            description: 2FA disabled
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/auth/otp/verify:
+      get:
+        tags:
+          - Authentication
+        summary: Verify OTP
+        description: Verifies OTP provided via query parameter and generates a new access token using a token stored in cookies.
+        parameters:
+          - name: otp
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: OTP verified and token issued
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResultModel'
+          '400':
+            description: Validation or token failure
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/admin/create:
+      post:
+        tags:
+          - Admin
+        summary: Create Admin
+        description: Creates a new admin using CreateUserDTO, authorized by the current user's ID from JWT claims.
+        security:
+          - BearerAuth: [ ]
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserDTO'
+        responses:
+          '200':
+            description: Admin created
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+          '400':
+            description: Request binding failed
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
+
+  /api/admin/roles:
+      put:
+        tags:
+          - Admin
+        summary: Change Role
+        description: Changes the role of the authenticated user to the role specified in the path parameter.
+        security:
+          - BearerAuth: [ ]
+        parameters:
+          - name: role
+            in: query
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Role updated
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ActionResult'
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Authentication requires a JWT token which is parsed into "claims" containing the "user_id".
   schemas:
+    CreateUserDTO:
+      type: object
+      required:
+        - username
+        - firstname
+        - lastname
+        - password
+        - retype_password
+        - email
+      properties:
+        username:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        password:
+          type: string
+        retype_password:
+          type: string
+        email:
+          type: string
+      description: DTO for user creation and admin creation.
+    LoginDTO:
+        type: object
+        required:
+          - username
+          - password
+        properties:
+          username:
+            type: string
+          password:
+            type: string
+        description: DTO for user authentication.
+    ChangePasswordDTO:
+        type: object
+        required:
+          - old_password
+          - new_password
+        properties:
+          old_password:
+            type: string
+          new_password:
+            type: string
+        description: DTO for changing an authenticated user's password.
+    AnonymousChangePasswordDTO:
+        type: object
+        required:
+          - new_password
+        properties:
+          new_password:
+            type: string
+        description: DTO for resetting a password using a token.
     ActionResult:
-      type: object
-      properties:
-        StatusCode:
-          type: integer
-        IsSuccess:
-          type: boolean
-        Error:
-          type: array
-
+        type: object
+        properties:
+          StatusCode:
+            type: integer
+          IsSuccess:
+            type: boolean
+          Error:
+            type: array
+            items:
+              type: string
     ActionResultModel:
-      type: object
-      properties:
-        Data:
-          type: object
-        StatusCode:
-          type: integer
-        IsSuccess:
-          type: boolean
-        Error:
-          type: array
+        type: object
+        properties:
+          Data:
+            type: object
+          StatusCode:
+            type: integer
+          IsSuccess:
+            type: boolean
+          Error:
+            type: array
+            items:
+              type: string
+    LoginResult:
+        type: object
+        properties:
+          StatusCode:
+            type: integer
+          IsSuccess:
+            type: boolean
+          Error:
+            type: array
+            items:
+              type: string
+          Token:
+            type: string
+          IsTwoFactorEnabled:
+            type: boolean

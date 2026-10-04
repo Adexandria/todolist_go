@@ -52,11 +52,6 @@ func CreateContainer() *dig.Container {
 		panic(err)
 	}
 
-	err = container.Provide(AuthenticationServiceCons)
-	if err != nil {
-		panic(err)
-	}
-
 	err = container.Provide(EmailServiceCon)
 	if err != nil {
 		panic(err)

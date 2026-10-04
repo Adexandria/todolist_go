@@ -6,8 +6,17 @@ import (
 )
 
 type Validator struct {
-	AccessRule AccessRule
+	AccessRule *AccessRule
 	Errors     []string
+}
+
+var _ IValidator = (*Validator)(nil)
+
+func ValidatorCon(rule *AccessRule) *Validator {
+	return &Validator{
+		AccessRule: rule,
+		Errors:     []string{},
+	}
 }
 
 func (r *Validator) VerifyPhoneNumber(value string) *Validator {
@@ -66,15 +75,6 @@ func (r *Validator) Verify() *ValidatorResult {
 		return Fail(currentErrors)
 	}
 	return Success()
-}
-
-var _ IValidator = (*Validator)(nil)
-
-func ValidatorCon(rule AccessRule) *Validator {
-	return &Validator{
-		AccessRule: rule,
-		Errors:     []string{},
-	}
 }
 
 func (r *Validator) verifyHasNumber(password string) *Validator {

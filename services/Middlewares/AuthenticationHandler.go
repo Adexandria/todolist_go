@@ -9,8 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthenticateMiddleware(tokenManager Utilities.ITokenManager) gin.HandlerFunc {
+const DisallowAuthenticationKey = "disallow-authentication"
+
+func AuthenticateMiddleware(tokenManager Utilities.TokenManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		disallowAuthentication := c.GetBool(DisallowAuthenticationKey)
+
+		if disallowAuthentication {
+			c.Next()
+		}
+
 		authHeader := c.Request.Header.Get("Authorization")
 		if authHeader == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, services.NotAuthorizedResult("Unauthorized"))
