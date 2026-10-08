@@ -1,8 +1,8 @@
-TodoList API (Go)
+# TodoList API (Go)
 
 A RESTful task-management API written in Go, with JWT authentication, role-based authorization, two-factor authentication (TOTP), and an OpenAPI-documented interface. Built as a layered service with dependency injection to keep every component independently testable.
 
-Highlights
+## Highlights
 - Layered architecture: handlers → services → repositories → models, with clear boundaries between HTTP, business logic, and persistence.
 - Dependency injection with uber-go/dig, so components are wired in one place and easy to swap or mock in tests.
 - Authentication & authorization: JWT-based auth, custom Gin middleware, and role-based route protection (user/admin).
