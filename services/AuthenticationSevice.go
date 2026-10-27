@@ -392,7 +392,7 @@ func (a *AuthenticationService) GenerateOTP(id int) *ActionResultModel[string] {
 		return NotFoundDataResult[string]("User not found")
 	}
 
-	if currentUser.TwoFactorEnabled == false && currentUser.AuthenticationType != 0 {
+	if !currentUser.TwoFactorEnabled && currentUser.AuthenticationType != 0 {
 		return BadRequestDataResult[string]("Failed to generate OTP")
 	}
 	totp := gotp.NewTOTP(currentUser.AuthenticationKey, 6, 180, nil)

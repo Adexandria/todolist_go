@@ -42,7 +42,6 @@ func registerRoutes(router *gin.Engine, tasks *handlers.Handler,
 
 	user.POST("/auth/2fa/setup", users.SetUpTwoFactorAuthentication)
 	user.POST("/auth/2fa/disable", users.DisableTwoFactorAuthentication)
-
 	user.POST("/auth/2fa/request-otp", users.RequestOTP)
 
 	// account

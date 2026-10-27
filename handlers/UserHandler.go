@@ -109,14 +109,14 @@ func (handler *UserHandler) Login(c *gin.Context) {
 	result := handler.IAuthenticationService.Authenticate(loginDTO.Username, loginDTO.Password)
 	if !result.IsSuccess && result.Lockout == 1 {
 
-		if !result.AccessResult.IsLockedOut {
+		if !result.IsLockedOut {
 			retries := value + 1
 
 			c.SetCookie(fmt.Sprintf("%slockout_", loginDTO.Username), strconv.Itoa(retries), 60*60, "/", "", true, true)
 
 			retries = getInt(handler.LockoutTrial) - retries
 
-			result.AccessResult.Error = append(result.AccessResult.Error, fmt.Sprintf("%d left", retries))
+			result.Error = append(result.Error, fmt.Sprintf("%d left", retries))
 		}
 		c.JSON(result.StatusCode, result.AccessResult)
 

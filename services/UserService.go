@@ -262,9 +262,10 @@ func (u *UserService) ChangeRole(id int, role string) *ActionResult {
 		return NotFoundResult("User not found")
 	}
 
-	if role == models.Roles[0] {
+	switch role {
+	case models.Roles[0]:
 		currentUser.Role = 0
-	} else if role == models.Roles[1] {
+	case models.Roles[1]:
 		currentUser.Role = 1
 	}
 
