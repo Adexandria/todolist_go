@@ -90,7 +90,10 @@ func (e *EmailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
 			return nil, fmt.Errorf("writing form field %q: %w", field, err)
 		}
 	}
-	writer.Close()
+	err := writer.Close()
+	if err != nil {
+		return nil, err
+	}
 
 	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewReader(data.Bytes()))
 	if err != nil {
@@ -103,7 +106,12 @@ func (e *EmailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("sending request: %w", err)
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(res.Body)
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {

@@ -226,7 +226,7 @@ func (u *UserService) ChangePassword(id int, oldPassword string, newPassword str
 		return BadRequestResult("Failed to change password")
 	}
 
-	newHashedPassword, err := u.passwordManager.HashPassword(newPassword)
+	newHashedPassword, _ := u.passwordManager.HashPassword(newPassword)
 
 	currentUser.Password = newHashedPassword
 
@@ -243,7 +243,7 @@ func (u *UserService) ChangeAnonPassword(email string, newPassword string) *Acti
 	if err != nil {
 		return NotFoundResult("User not found")
 	}
-	newHashedPassword, err := u.passwordManager.HashPassword(newPassword)
+	newHashedPassword, _ := u.passwordManager.HashPassword(newPassword)
 
 	currentUser.Password = newHashedPassword
 

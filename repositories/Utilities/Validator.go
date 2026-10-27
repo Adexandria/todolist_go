@@ -113,7 +113,7 @@ func (r *Validator) verifyHasSpecialLetter(password string) *Validator {
 
 func (r *Validator) verifyMinPasswordLength(password string) *Validator {
 	if r.AccessRule.PasswordRule.MinimumPasswordLength > len(password) {
-		err := fmt.Sprintf("Invalid Password Length, Password must contain more than", r.AccessRule.PasswordRule.MinimumPasswordLength, "characters")
+		err := fmt.Sprintf("Invalid Password Length, Password must contain more than %d characters", r.AccessRule.PasswordRule.MinimumPasswordLength)
 		r.Errors = append(r.Errors, err)
 	}
 	return r
@@ -121,7 +121,7 @@ func (r *Validator) verifyMinPasswordLength(password string) *Validator {
 
 func (r *Validator) verifyMaxPasswordLength(password string) *Validator {
 	if r.AccessRule.PasswordRule.MaximumPasswordLength > len(password) {
-		err := fmt.Sprintf("Invalid Password Length, Password must not contain more than", r.AccessRule.PasswordRule.MaximumPasswordLength, "characters")
+		err := fmt.Sprintf("Invalid Password Length, Password must not contain more than %d characters", r.AccessRule.PasswordRule.MaximumPasswordLength)
 		r.Errors = append(r.Errors, err)
 	}
 	return r
@@ -133,7 +133,7 @@ func (r *Validator) VerifyAuthenticationType(value string) *Validator {
 			return r
 		}
 	}
-	err := fmt.Sprintf("Invalid Authentication Type: %s Only Sms and Google are accepted", value)
+	err := fmt.Sprintf("Invalid Authentication Type: %s Only sms and google are accepted", value)
 	r.Errors = append(r.Errors, err)
 	return r
 }
