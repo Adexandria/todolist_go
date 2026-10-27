@@ -1,16 +1,18 @@
 package services
 
 type IAuthenticationService interface {
-	Authenticate(username string, password string) *AccessResult
-	GeneratePhoneNumberResetToken(id int) *ActionResultModel[string]
+	Authenticate(username string, password string) *AuthenticationResult
+	GeneratePhoneNumberResetToken(id int) *ActionResult
 	VerifyPhoneNumberResetToken(id int, token string) *ActionResult
-	VerifyEmailResetToken(id int, token string) *ActionResult
-	GenerateEmailResetToken(email string) *ActionResultModel[string]
-	GeneratePasswordResetToken(email string) *ActionResultModel[string]
+	VerifyToken(email string, token string) *ActionResult
+	GenerateResetToken(email string) *ActionResultModel[string]
+	SendEmailConfirmationMail(userId int)
 	DecodeToken(token string) *ActionResultModel[string]
 	EnableTwoFactorAuthentication(id int, authenticationType string) *ActionResultModel[string]
 	DisableTwoFactorAuthentication(id int) *ActionResult
 	GenerateOTP(id int) *ActionResultModel[string]
-	VerifyOTP(otp string) *ActionResult
-	GenerateAccessToken(email string) *AccessResult
+	VerifyOTP(email string, otp string) *ActionResult
+	GenerateAccessWithRefreshToken(token string) *AuthenticationResult
+	GenerateAccessToken(email string) *AuthenticationResult
+	DeleteRefreshToken(token string) *ActionResult
 }

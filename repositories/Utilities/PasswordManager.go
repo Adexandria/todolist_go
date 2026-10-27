@@ -18,7 +18,7 @@ func PasswordManagerCons(handler *slog.JSONHandler) *PasswordManager {
 
 var _ IPasswordManager = (*PasswordManager)(nil)
 
-func (p *PasswordManager) VerifyPassword(password string, currentPassword string) bool {
+func (p *PasswordManager) VerifyPassword(currentPassword string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(currentPassword), []byte(password))
 	return err == nil
 }

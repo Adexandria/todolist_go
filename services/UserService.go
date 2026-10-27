@@ -16,13 +16,20 @@ func (u *UserService) CreateUser(newUser *models.CreateUserDTO) *ActionResult {
 	if err != nil {
 		return BadRequestResult("Failed to create user")
 	}
+
+	isExist, _ := u.userRepos.VerifyUserByEmail(newUser.Email)
+	if isExist {
+		return BadRequestResult("Username already exists")
+	}
+
 	user := &models.User{
-		FirstName: newUser.FirstName,
-		LastName:  newUser.LastName,
-		Username:  newUser.Username,
-		Email:     newUser.Email,
-		Password:  passwordHashed,
-		Role:      0,
+		FirstName:          newUser.FirstName,
+		LastName:           newUser.LastName,
+		Username:           newUser.Username,
+		Email:              newUser.Email,
+		Password:           passwordHashed,
+		Role:               0,
+		AuthenticationType: 2,
 	}
 
 	err = u.userRepos.CreateUser(user)
@@ -45,12 +52,13 @@ func (u *UserService) CreateAdmin(id int, newUser *models.CreateUserDTO) *Action
 		return BadRequestResult("Failed to create user")
 	}
 	user := &models.User{
-		FirstName: newUser.FirstName,
-		LastName:  newUser.LastName,
-		Username:  newUser.Username,
-		Email:     newUser.Email,
-		Password:  passwordHashed,
-		Role:      1,
+		FirstName:          newUser.FirstName,
+		LastName:           newUser.LastName,
+		Username:           newUser.Username,
+		Email:              newUser.Email,
+		Password:           passwordHashed,
+		Role:               1,
+		AuthenticationType: 2,
 	}
 
 	err = u.userRepos.CreateUser(user)
@@ -110,8 +118,8 @@ func (u *UserService) SetEmail(id int, email string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) ConfirmEmail(id int) *ActionResult {
-	currentUser, err := u.userRepos.GetUserById(id)
+func (u *UserService) ConfirmEmail(email string) *ActionResult {
+	currentUser, err := u.userRepos.GetUserByEmail(email)
 	if err != nil {
 		return NotFoundResult("User not found")
 	}
@@ -268,8 +276,8 @@ func (u *UserService) ChangeRole(id int, role string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) EnableLockout(id int) *ActionResult {
-	currentUser, err := u.userRepos.GetUserById(id)
+func (u *UserService) EnableLockout(username string) *ActionResult {
+	currentUser, err := u.userRepos.GetUserByUsername(username)
 	if err != nil {
 		return NotFoundResult("User not found")
 	}

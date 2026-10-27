@@ -11,12 +11,20 @@ import (
 
 const DisallowAuthenticationKey = "disallow-authentication"
 
-func AuthenticateMiddleware(tokenManager Utilities.TokenManager) gin.HandlerFunc {
+func DisallowAuthentication() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set(DisallowAuthenticationKey, true)
+		c.Next()
+	}
+}
+
+func AuthenticateMiddleware(tokenManager *Utilities.TokenManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		disallowAuthentication := c.GetBool(DisallowAuthenticationKey)
 
 		if disallowAuthentication {
 			c.Next()
+			return
 		}
 
 		authHeader := c.Request.Header.Get("Authorization")
@@ -33,13 +41,15 @@ func AuthenticateMiddleware(tokenManager Utilities.TokenManager) gin.HandlerFunc
 
 		tokenString := parts[1]
 
-		claims, err := tokenManager.DecodeToken(tokenString)
+		claims, err := tokenManager.DecodeJWTToken(tokenString)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, services.NotAuthorizedResult("Unauthorized"))
 			return
 		}
 
-		c.Set(ClaimsKey, claims)
+		identityClaims := Utilities.ExtractIdentity(claims)
+
+		c.Set(ClaimsKey, identityClaims)
 		c.Next()
 	}
 }

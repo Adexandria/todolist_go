@@ -13,6 +13,14 @@ type UserRepository struct {
 	Logger *slog.Logger
 }
 
+func (u *UserRepository) GetUserByRefreshToken(refreshToken string) (models.User, error) {
+	ctx := context.Background()
+
+	currentUser, err := gorm.G[models.User](u.Db).Where("refresh_token = ?", refreshToken).First(ctx)
+
+	return currentUser, err
+}
+
 func (u *UserRepository) GetUserById(id int) (models.User, error) {
 	ctx := context.Background()
 
@@ -73,7 +81,7 @@ func (u *UserRepository) CreateUser(user *models.User) error {
 func (u *UserRepository) UpdateUser(user *models.User) error {
 	ctx := context.Background()
 
-	_, err := gorm.G[models.User](u.Db).Where("id = ?", user.ID).Updates(ctx, *user)
+	_, err := gorm.G[models.User](u.Db).Where("id = ?", user.ID).Select("*").Updates(ctx, *user)
 
 	return err
 }

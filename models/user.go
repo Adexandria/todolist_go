@@ -3,8 +3,8 @@ package models
 import "gorm.io/gorm"
 
 type CreateUserDTO struct {
-	FirstName      string `json:"first_name"`
-	LastName       string `json:"last_name"`
+	FirstName      string `json:"firstname"`
+	LastName       string `json:"lastname"`
 	Username       string `json:"username"`
 	Email          string `json:"email"`
 	Password       string `json:"password"`
@@ -17,8 +17,8 @@ type LoginDTO struct {
 }
 
 type ChangePasswordDTO struct {
-	OldPassword string `json:"old_password"`
-	NewPassword string `json:"new_password"`
+	OldPassword string `json:"oldpassword"`
+	NewPassword string `json:"newpassword"`
 }
 
 type AnonymousChangePasswordDTO struct {
@@ -52,7 +52,7 @@ type User struct {
 	FirstName            string `Gorm:"size:255"`
 	LastName             string `Gorm:"size:255"`
 	Username             string `Gorm:"unique"`
-	Password             string
+	Password             string `Gorm:"size(255)"`
 	Email                string `Gorm:"unique"`
 	PhoneNumber          string
 	EmailConfirmed       bool `Gorm:"default:false"`
@@ -88,6 +88,6 @@ const (
 
 var AuthenticationTypes = map[AuthenticationType]string{
 	Sms:     "sms",
-	Google:  "google_Authentication",
+	Google:  "google",
 	Default: "none",
 }

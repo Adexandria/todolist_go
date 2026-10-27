@@ -32,6 +32,7 @@ func CreateContainer() *dig.Container {
 	if err != nil {
 		panic(err)
 	}
+
 	err = container.Provide(Utilities.TokenManagerCons)
 	if err != nil {
 		panic(err)
@@ -53,6 +54,11 @@ func CreateContainer() *dig.Container {
 	}
 
 	err = container.Provide(EmailServiceCon)
+	if err != nil {
+		panic(err)
+	}
+
+	err = container.Provide(SmsCon)
 	if err != nil {
 		panic(err)
 	}

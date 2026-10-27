@@ -23,7 +23,7 @@ type TokenManager struct {
 	TokenSecretKey  string
 }
 
-func (t *TokenManager) GenerateEmailToken(email string) (string, error) {
+func (t *TokenManager) GenerateToken(email string) (string, error) {
 	i, err := strconv.ParseInt(t.DurationMins, 10, 64)
 	if err != nil {
 		t.Logger.Error(err.Error())
@@ -32,14 +32,16 @@ func (t *TokenManager) GenerateEmailToken(email string) (string, error) {
 
 	duration := time.Duration(i) * time.Hour
 
-	TokenString := email + "_" + duration.String() + "_" + t.SecretKey
+	expiry := time.Now().Add(duration)
+
+	TokenString := email + "_" + expiry.String() + "_" + t.SecretKey
 
 	h := b64.StdEncoding.EncodeToString([]byte(TokenString))
 
 	return h, nil
 }
 
-func (t *TokenManager) ValidateEmailToken(email string, token string) bool {
+func (t *TokenManager) ValidateToken(email string, token string) bool {
 	h, err := b64.StdEncoding.DecodeString(token)
 
 	if err != nil {
@@ -53,13 +55,15 @@ func (t *TokenManager) ValidateEmailToken(email string, token string) bool {
 		return false
 	}
 
-	if decodedToken[0] == email && decodedToken[2] == t.SecretKey {
-		return true
+	if decodedToken[0] != email || decodedToken[2] != t.SecretKey || decodedToken[1] < time.Now().String() {
+
+		return false
 	}
-	return false
+
+	return true
 }
 
-func (t *TokenManager) DecodeEmailToken(token string) (string, error) {
+func (t *TokenManager) DecodeToken(token string) (string, error) {
 	h, err := b64.StdEncoding.DecodeString(token)
 	if err != nil {
 		t.Logger.Error(err.Error())
@@ -77,7 +81,7 @@ func (t *TokenManager) DecodeEmailToken(token string) (string, error) {
 
 }
 
-func (t *TokenManager) GenerateTokenWithClaims(claims map[string]any) (string, error) {
+func (t *TokenManager) GenerateJWTTokenWithClaims(claims map[string]any) (string, error) {
 
 	newclaims := jwt.MapClaims{}
 
@@ -111,17 +115,37 @@ func (t *TokenManager) GenerateRefreshToken(id int) (string, error) {
 		t.Logger.Error(err.Error())
 		return "", err
 	}
-
 	duration := time.Duration(i) * time.Hour
 
-	userRefreshTokenString := strconv.Itoa(id) + "_" + duration.String() + "_" + t.RefreshTokenKey
+	expiry := time.Now().Add(duration)
+
+	userRefreshTokenString := strconv.Itoa(id) + "_" + expiry.String() + "_" + t.RefreshTokenKey
 
 	h := b64.StdEncoding.EncodeToString([]byte(userRefreshTokenString))
 
 	return h, nil
 }
 
-func (t *TokenManager) VerifyToken(token string) bool {
+func (t *TokenManager) VerifyRefreshToken(id int, token string) bool {
+	h, err := b64.StdEncoding.DecodeString(token)
+
+	if err != nil {
+		t.Logger.Error(err.Error())
+		return false
+	}
+	decodedToken := strings.Split(string(h), "_")
+	if len(decodedToken) < 3 {
+		return false
+	}
+
+	if decodedToken[2] != t.RefreshTokenKey || decodedToken[1] != time.Now().String() || decodedToken[0] != strconv.Itoa(id) {
+		return false
+	}
+
+	return true
+}
+
+func (t *TokenManager) VerifyJWTToken(token string) bool {
 	validToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return []byte(t.TokenSecretKey), nil
 	})
@@ -132,7 +156,7 @@ func (t *TokenManager) VerifyToken(token string) bool {
 	return validToken.Valid
 }
 
-func (t *TokenManager) DecodeToken(token string) (jwt.MapClaims, error) {
+func (t *TokenManager) DecodeJWTToken(token string) (jwt.MapClaims, error) {
 	validToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")

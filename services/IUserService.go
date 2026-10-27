@@ -13,7 +13,7 @@ type IUserService interface {
 
 	SetEmail(id int, email string) *ActionResult
 
-	ConfirmEmail(id int) *ActionResult
+	ConfirmEmail(email string) *ActionResult
 
 	SetPhoneNumber(id int, phone string) *ActionResult
 
@@ -31,7 +31,7 @@ type IUserService interface {
 
 	ChangeRole(id int, role string) *ActionResult
 
-	EnableLockout(id int) *ActionResult
+	EnableLockout(username string) *ActionResult
 
 	DisableLockout(id int) *ActionResult
 }

@@ -7,6 +7,8 @@ type IUserRepository interface {
 	GetUserByUsername(username string) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
 
+	GetUserByRefreshToken(refreshToken string) (models.User, error)
+
 	CreateUser(user *models.User) error
 	UpdateUser(user *models.User) error
 	DeleteUser(user *models.User) error

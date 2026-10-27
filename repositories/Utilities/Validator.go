@@ -1,8 +1,10 @@
 package Utilities
 
 import (
+	"SM/models"
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 type Validator struct {
@@ -20,7 +22,7 @@ func ValidatorCon(rule *AccessRule) *Validator {
 }
 
 func (r *Validator) VerifyPhoneNumber(value string) *Validator {
-	if len(value) >= 10 {
+	if len(value) < 10 {
 		r.Errors = append(r.Errors, "Invalid PhoneNumber")
 	}
 	return r
@@ -42,7 +44,7 @@ func (r *Validator) VerifyPassword(value string, currentValue string) *Validator
 
 func (r *Validator) IsNullOrEmpty(value string) *Validator {
 	result := value == "" || value == "null"
-	if !result {
+	if result {
 		r.Errors = append(r.Errors, "Value must contain at least one character")
 	}
 	return r
@@ -53,15 +55,6 @@ func (r *Validator) VerifyEmail(value string) *Validator {
 	result := re.MatchString(value)
 	if !result {
 		r.Errors = append(r.Errors, "Invalid email address")
-	}
-	return r
-}
-
-func (r *Validator) VerifyEmailRequirement(isEmailConfirmed bool) *Validator {
-	if r.AccessRule.IsRequireEmailConfirmation {
-		if !isEmailConfirmed {
-			r.Errors = append(r.Errors, "Email confirmation is required")
-		}
 	}
 	return r
 }
@@ -119,7 +112,7 @@ func (r *Validator) verifyHasSpecialLetter(password string) *Validator {
 }
 
 func (r *Validator) verifyMinPasswordLength(password string) *Validator {
-	if r.AccessRule.PasswordRule.MinimumPasswordLength < len(password) {
+	if r.AccessRule.PasswordRule.MinimumPasswordLength > len(password) {
 		err := fmt.Sprintf("Invalid Password Length, Password must contain more than", r.AccessRule.PasswordRule.MinimumPasswordLength, "characters")
 		r.Errors = append(r.Errors, err)
 	}
@@ -127,9 +120,20 @@ func (r *Validator) verifyMinPasswordLength(password string) *Validator {
 }
 
 func (r *Validator) verifyMaxPasswordLength(password string) *Validator {
-	if r.AccessRule.PasswordRule.MaximumPasswordLength < len(password) {
+	if r.AccessRule.PasswordRule.MaximumPasswordLength > len(password) {
 		err := fmt.Sprintf("Invalid Password Length, Password must not contain more than", r.AccessRule.PasswordRule.MaximumPasswordLength, "characters")
 		r.Errors = append(r.Errors, err)
 	}
+	return r
+}
+
+func (r *Validator) VerifyAuthenticationType(value string) *Validator {
+	for _, name := range models.AuthenticationTypes {
+		if name == strings.ToLower(value) {
+			return r
+		}
+	}
+	err := fmt.Sprintf("Invalid Authentication Type: %s Only Sms and Google are accepted", value)
+	r.Errors = append(r.Errors, err)
 	return r
 }

@@ -31,10 +31,11 @@ type MailgunResponse struct {
 }
 
 var templateVars = map[string]string{
-	"Welcome": "Templates/welcome.html",
-	"Login":   "Templates/login.html",
-	"Notify":  "Templates/notification.html",
-	"Forgot":  "Templates/forgot_password.html",
+	"Welcome":     "Templates/welcome.html",
+	"Login":       "Templates/login.html",
+	"Notify":      "Templates/notification.html",
+	"Forgot":      "Templates/forgot_password.html",
+	"Phonenumber": "Templates/phonenumber.html",
 }
 
 type EmailService struct {

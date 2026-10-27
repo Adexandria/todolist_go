@@ -2,12 +2,12 @@ package handlers
 
 import (
 	"SM/models"
+	"SM/repositories/Utilities"
 	"SM/services"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type Handler struct {
@@ -27,12 +27,13 @@ func (h *Handler) GetTaskById(c *gin.Context) {
 	val, _ := strconv.Atoi(id)
 
 	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
+	claims := claimsString.(*Utilities.IdentityClaim)
+	userId := claims.Id
 
 	currentTask := h.Service.GetTaskById(userId, val)
 	if currentTask == (models.TaskDTO{}) {
 		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
+		return
 	}
 	c.JSON(http.StatusOK, services.SuccessDataResult(currentTask))
 }
@@ -42,16 +43,18 @@ func (h *Handler) CreateTask(c *gin.Context) {
 	var createTaskDTO models.CreateTaskDTO
 	if err := c.ShouldBind(&createTaskDTO); err != nil {
 		c.JSON(http.StatusBadRequest, services.BadRequestResult(err.Error()))
+		return
 
 	}
 
 	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
+	claims := claimsString.(*Utilities.IdentityClaim)
+	userId := claims.Id
 
 	newId, er := h.Service.CreateTask(userId, &createTaskDTO)
 	if er != "" {
 		c.JSON(http.StatusBadRequest, services.BadRequestResult(er))
+		return
 	}
 
 	c.JSON(http.StatusOK, services.SuccessDataResult[uint](newId))
@@ -63,22 +66,25 @@ func (h *Handler) UpdateTask(c *gin.Context) {
 	var updateTaskDTO models.UpdateTaskDTO
 	if err := c.ShouldBind(&updateTaskDTO); err != nil {
 		c.JSON(http.StatusBadRequest, services.BadRequestResult(err.Error()))
+		return
 	}
 	id := c.Param("id")
 	val, _ := strconv.Atoi(id)
 
 	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
+	claims := claimsString.(*Utilities.IdentityClaim)
+	userId := claims.Id
 
 	currentTask := h.Service.GetTaskById(userId, val)
 	if currentTask == (models.TaskDTO{}) {
 		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
+		return
 
 	}
 	isUpdated := h.Service.UpdateTask(userId, val, &updateTaskDTO)
 	if isUpdated {
 		c.JSON(http.StatusOK, services.SuccessResult())
+		return
 	}
 	c.JSON(http.StatusBadRequest, services.BadRequestResult("Failed to update task"))
 }
@@ -89,17 +95,19 @@ func (h *Handler) DeleteTask(c *gin.Context) {
 	val, _ := strconv.Atoi(id)
 
 	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
+	claims := claimsString.(*Utilities.IdentityClaim)
+	userId := claims.Id
 
 	currentTask := h.Service.GetTaskById(userId, val)
 	if currentTask == (models.TaskDTO{}) {
 		c.JSON(http.StatusNotFound, services.NotFoundResult("Task Not Found"))
+		return
 
 	}
 	isDeleted := h.Service.DeleteTask(userId, val)
 	if isDeleted {
 		c.JSON(http.StatusOK, services.SuccessResult())
+		return
 
 	}
 	c.JSON(http.StatusBadRequest, services.BadRequestResult("Failed to delete task"))
@@ -108,8 +116,8 @@ func (h *Handler) DeleteTask(c *gin.Context) {
 // Handler method to retrieve all tasks with pagination
 func (h *Handler) GetAllTasks(c *gin.Context) {
 	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
+	claims := claimsString.(*Utilities.IdentityClaim)
+	userId := claims.Id
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 
@@ -124,8 +132,8 @@ func (h *Handler) GetAllTasks(c *gin.Context) {
 func (h *Handler) FilterTasks(c *gin.Context) {
 
 	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
+	claims := claimsString.(*Utilities.IdentityClaim)
+	userId := claims.Id
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
@@ -165,8 +173,8 @@ func (h *Handler) FilterTasks(c *gin.Context) {
 // Handler method to search for tasks by name with pagination
 func (h *Handler) SearchByTask(c *gin.Context) {
 	claimsString, _ := c.Get("claims")
-	claims := claimsString.(jwt.MapClaims)
-	userId := claims["user_id"].(int)
+	claims := claimsString.(*Utilities.IdentityClaim)
+	userId := claims.Id
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))

@@ -34,7 +34,7 @@ func (r PasswordRule) EnableSpecialCharacter() PasswordRule {
 }
 
 func (r PasswordRule) SetMinimumPasswordLength(length ...int) PasswordRule {
-	minLen := 6
+	minLen := 3
 	if len(length) > 0 {
 		minLen = length[0]
 	}
@@ -43,13 +43,13 @@ func (r PasswordRule) SetMinimumPasswordLength(length ...int) PasswordRule {
 }
 
 func (r PasswordRule) SetMaximumPasswordLength(length ...int) PasswordRule {
-	maxLen := 3
+	maxLen := 7
 
 	if len(length) > 0 {
 		maxLen = length[0]
 	}
 
-	r.MinimumPasswordLength = maxLen
+	r.MaximumPasswordLength = maxLen
 	return r
 }
 

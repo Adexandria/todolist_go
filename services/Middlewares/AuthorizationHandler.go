@@ -1,17 +1,30 @@
 package Middlewares
 
 import (
+	"SM/repositories/Utilities"
 	"SM/services"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 const RolesKey = "allowed_roles"
 const ClaimsKey = "claims"
 const IsAnonymousRouteKey = "is_anonymous_route"
 
+func AttachRoles(roles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set(RolesKey, roles)
+		c.Next()
+	}
+}
+
+func AllowAnonymous() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set(IsAnonymousRouteKey, true)
+		c.Next()
+	}
+}
 func AuthorizeMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		isAnonymousRoute := c.GetBool(IsAnonymousRouteKey)
@@ -36,16 +49,14 @@ func AuthorizeMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims := claimsString.(jwt.MapClaims)
-
-		userRole, ok := claims["roles"].(string)
-		if !ok {
+		claims := claimsString.(*Utilities.IdentityClaim)
+		if claims.Role == "" || claims.Role == "null" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, services.ForbiddenResult("Unauthorized"))
 			return
 		}
 
 		for _, role := range allowedRoles {
-			if role == userRole {
+			if role == claims.Role {
 				c.Next()
 				return
 			}
