@@ -112,7 +112,7 @@ func (e *EmailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			e.Logger.Error("Failed to close response body: %w", err)
+			e.Logger.Error(fmt.Sprintf("sending request: %s", err.Error()))
 		}
 	}(res.Body)
 
