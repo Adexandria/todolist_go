@@ -78,9 +78,7 @@ func (t *TaskService) DeleteTask(userId int, id int) bool {
 func (t *TaskService) GetAllTasks(userId int, page int, pageSize int) models.PaginatedDTO {
 	tasks := t.repo.GetAll(userId, page, pageSize)
 
-	var total int
-
-	total = len(tasks)
+	total := len(tasks)
 
 	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
@@ -107,9 +105,7 @@ func (t *TaskService) GetTaskById(userId int, id int) models.TaskDTO {
 func (t *TaskService) GetTaskByMonthAndYear(userId int, month int, year int, page int, pageSize int) models.PaginatedDTO {
 	tasks := t.repo.GetByMonthAndYear(userId, month, year, page, pageSize)
 
-	var total int
-
-	total = len(tasks)
+	total := len(tasks)
 
 	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
@@ -118,9 +114,7 @@ func (t *TaskService) GetTaskByMonthAndYear(userId int, month int, year int, pag
 func (t *TaskService) GetTaskByCreatedDate(userId int, date int, month int, year int, page int, pageSize int) models.PaginatedDTO {
 	tasks := t.repo.GetByCreatedDate(userId, date, month, year, page, pageSize)
 
-	var total int
-
-	total = len(tasks)
+	total := len(tasks)
 
 	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
@@ -129,9 +123,7 @@ func (t *TaskService) GetTaskByCreatedDate(userId int, date int, month int, year
 func (t *TaskService) GetTaskByYear(userId int, year int, page int, pageSize int) models.PaginatedDTO {
 	tasks := t.repo.GetByYear(userId, year, page, pageSize)
 
-	var total int
-
-	total = len(tasks)
+	total := len(tasks)
 
 	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }
@@ -140,9 +132,7 @@ func (t *TaskService) GetTaskByYear(userId int, year int, page int, pageSize int
 func (t *TaskService) SearchTaskByName(userId int, name string, page int, pageSize int) models.PaginatedDTO {
 	tasks := t.repo.SearchByName(userId, name, page, pageSize)
 
-	var total int
-
-	total = len(tasks)
+	total := len(tasks)
 
 	return models.ToPaginatedDTO(tasks, total, page, pageSize)
 }

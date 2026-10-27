@@ -88,7 +88,7 @@ func CreateDefaultAdmin(userRepos *repositories.UserRepository, passwordManager 
 		EmailConfirmed:     true,
 		AuthenticationType: 2,
 	}
-	isExist, err := userRepos.VerifyUserByEmail(user.Email)
+	isExist, _ := userRepos.VerifyUserByEmail(user.Email)
 	if isExist {
 		return
 	}

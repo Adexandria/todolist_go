@@ -37,7 +37,7 @@ func (r *Validator) CheckPasswordRule(password string) *Validator {
 
 func (r *Validator) VerifyPassword(value string, currentValue string) *Validator {
 	if value != currentValue {
-		r.Errors = append(r.Errors, fmt.Sprintf("Passwords don't match"))
+		r.Errors = append(r.Errors, "Passwords don't match")
 	}
 	return r
 }

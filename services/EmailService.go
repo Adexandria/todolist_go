@@ -39,6 +39,7 @@ var templateVars = map[string]string{
 }
 
 type EmailService struct {
+	Logger *slog.Logger
 }
 
 func (e *EmailService) GenerateMailgunTemplate(from string, to string, subject string, html string) MailgunMessage {
@@ -50,8 +51,10 @@ func (e *EmailService) GenerateMailgunTemplate(from string, to string, subject s
 	}
 }
 
-func EmailServiceCon() *EmailService {
-	return &EmailService{}
+func EmailServiceCon(handler *slog.JSONHandler) *EmailService {
+	return &EmailService{
+		Logger: slog.New(handler),
+	}
 }
 
 func (e *EmailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
@@ -109,7 +112,7 @@ func (e *EmailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
+			e.Logger.Error("Failed to close response body: %w", err)
 		}
 	}(res.Body)
 
