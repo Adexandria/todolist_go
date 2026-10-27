@@ -137,15 +137,15 @@
 
         <div class="content">
             <p class="welcome-text">
-                Hello <strong>{{ username }}</strong>,<br><br>
+                Hello <strong>{{ .Username }}</strong>,<br><br>
                 To ensure the security of your account and start using the <span class="highlight">Todo List API</span>, we need to verify your email address.
             </p>
 
-            <a href="{{ verification_url }}" class="cta-button">Verify Email Address</a>
+            <a href="{{ .Verification_url }}" class="cta-button">Verify Email Address</a>
 
             <div class="link-fallback">
                 If the button above doesn't work, copy and paste this link into your browser:<br>
-                <a href="{{ verification_url }}">{{ verification_url }}</a>
+                <a href="{{ .Verification_url }}">{{ .Verification_url }}</a>
             </div>
         </div>
 

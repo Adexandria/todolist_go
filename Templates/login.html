@@ -60,14 +60,14 @@
                                 <h1>New sign-in detected</h1>
                                 
                                 <p style="text-align: center;">
-                                    Hi <strong>{{username}}</strong>, we noticed a new sign-in to your account.
+                                    Hi <strong>{{.Username}}</strong>, we noticed a new sign-in to your account.
                                 </p>
 
                                 <table role="presentation" class="details-box" cellspacing="0" cellpadding="0">
                                     <tr>
                                         <td style="padding: 25px; text-align: center;">
                                             <span class="details-label">Time of Login</span>
-                                            <span class="details-value">{{login_time}}</span>
+                                            <span class="details-value">{{.Login_time}}</span>
                                         </td>
                                     </tr>
                                 </table>
@@ -78,7 +78,7 @@
                                 </p>
 
                                 <div class="btn-container">
-                                    <a href="{{secure_link}}" class="btn">No, secure my account</a>
+                                    <a href="{{.Secure_link}}" class="btn">No, secure my account</a>
                                 </div>
 
                             </td>
