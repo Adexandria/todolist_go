@@ -225,7 +225,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ActionResultModel'
 
-  /api/task/search:
+  /api/tasks/search:
     get:
       tags:
         - Tasks
@@ -308,6 +308,33 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/ActionResult'
+  /api/auth/access-token:
+    post:
+      tags:
+        - Authentication
+      summary: Generate a new access token
+      description: Reads the refresh-token cookie, validates it, and returns a new access token. On success, the refresh-token cookie is set again (HttpOnly, Secure). The client must send credentials with the request.
+      operationId: GenerateAccessToken
+      security:
+        - RefreshTokenCookie: [ ]
+      responses:
+        '200':
+          description: Access token generated
+          headers:
+            Set-Cookie:
+              description: Refresh token cookie (HttpOnly, Secure, Path=/)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResultModel'
+        '400':
+          description: Refresh token cookie is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
 
   /api/auth/logout:
       post:
@@ -381,11 +408,14 @@ paths:
           - Authentication
         summary: Confirm Email Token
         description: Verifies the email token provided in the query string for the authenticated user.
-        security:
-          - BearerAuth: [ ]
         parameters:
           - name: token
             in: query
+            required: true
+            schema:
+              type: string
+          - name: email
+            in : query
             required: true
             schema:
               type: string
@@ -404,7 +434,7 @@ paths:
                   $ref: '#/components/schemas/ActionResult'
 
   /api/auth/reset-password:
-      get:
+      post:
         tags:
           - Authentication
         summary: Request Password Reset
@@ -429,7 +459,7 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ActionResult'
 
-  /api/auth/reset-password-token:
+  /api/auth/verify-password:
       post:
         tags:
           - Authentication
@@ -437,6 +467,11 @@ paths:
         description: Changes an anonymous user's password using a valid token in the query string.
         parameters:
           - name: token
+            in: query
+            required: true
+            schema:
+              type: string
+          - name: email
             in: query
             required: true
             schema:
@@ -640,7 +675,7 @@ paths:
         security:
           - BearerAuth: [ ]
         parameters:
-          - name: user_id
+          - name: id
             in: query
             required: true
             schema:
@@ -709,6 +744,12 @@ paths:
         description: Enables 2FA using the authentication_type defined in the JWT claims.
         security:
           - BearerAuth: [ ]
+        parameters:
+          - name: authentication_type
+            in: query
+            required: true
+            schema:
+              type: string
         responses:
           '200':
             description: 2FA setup completed
@@ -716,6 +757,26 @@ paths:
               application/json:
                 schema:
                   $ref: '#/components/schemas/ActionResult'
+  /api/auth/2fa/request-otp:
+        post:
+          tags:
+            - Authentication
+          summary: Sends OTP to your phonenumber if enabled
+          security:
+            - BearerAuth: [ ]
+          responses:
+            '200':
+              description: OTP has been sent
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ActionResultModel'
+            '400':
+              description: Failed to send OTP
+              content:
+                application/json:
+                  schema:
+                    $ref: '#/components/schemas/ActionResult'
 
   /api/auth/2fa/disable:
       post:
@@ -734,7 +795,7 @@ paths:
                   $ref: '#/components/schemas/ActionResult'
 
   /api/auth/otp/verify:
-      get:
+      post:
         tags:
           - Authentication
         summary: Verify OTP
@@ -787,6 +848,32 @@ paths:
                 schema:
                   $ref: '#/components/schemas/ActionResult'
 
+  /api/admin/users/{id}/disable-2fa:
+    post:
+      tags:
+        - Admin
+      summary: Disable user's two factor authentication
+      security:
+        - BearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Two factor authentication disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+        '400':
+          description: Failed to disable two factor authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
   /api/admin/roles:
       put:
         tags:
@@ -815,6 +902,11 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Authentication requires a JWT token which is parsed into "claims" containing the "user_id".
+    RefreshTokenCookie:
+      type: apiKey
+      in: cookie
+      name: refresh-token
+      description: HttpOnly cookie containing the refresh token.
   schemas:
     CreateUserDTO:
       type: object
@@ -839,6 +931,7 @@ components:
         email:
           type: string
       description: DTO for user creation and admin creation.
+
     LoginDTO:
         type: object
         required:
