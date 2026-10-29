@@ -2,7 +2,7 @@ package Utilities
 
 import "github.com/golang-jwt/jwt/v5"
 
-type ITokenManager interface {
+type TokenManager interface {
 	GenerateJWTTokenWithClaims(claims map[string]any) (string, error)
 	VerifyJWTToken(token string) bool
 	DecodeJWTToken(token string) (jwt.MapClaims, error)

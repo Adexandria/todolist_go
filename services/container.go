@@ -18,47 +18,47 @@ func CreateContainer() *dig.Container {
 		panic(err)
 	}
 
-	err = container.Provide(repositories.TaskRepo)
+	err = container.Provide(repositories.NewTaskRepo)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(TaskServiceCon)
+	err = container.Provide(NewTaskService)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(repositories.UserRepoCon)
+	err = container.Provide(repositories.NewUserRepo)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(Utilities.TokenManagerCons)
+	err = container.Provide(Utilities.NewTokenManager)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(Utilities.PasswordManagerCons)
+	err = container.Provide(Utilities.NewPasswordManager)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(UserServiceCon)
+	err = container.Provide(NewUserService)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(AuthenticationServiceCons)
+	err = container.Provide(NewAuthenticationService)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(EmailServiceCon)
+	err = container.Provide(NewEmailService)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(SmsCon)
+	err = container.Provide(NewSmsService)
 	if err != nil {
 		panic(err)
 	}

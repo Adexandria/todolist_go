@@ -6,24 +6,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type PasswordManager struct {
+type passwordManager struct {
 	Logger *slog.Logger
 }
 
-func PasswordManagerCons(handler *slog.JSONHandler) *PasswordManager {
-	return &PasswordManager{
+func NewPasswordManager(handler *slog.JSONHandler) PasswordManager {
+	return &passwordManager{
 		Logger: slog.New(handler),
 	}
 }
 
-var _ IPasswordManager = (*PasswordManager)(nil)
+var _ PasswordManager = (*passwordManager)(nil)
 
-func (p *PasswordManager) VerifyPassword(currentPassword string, password string) bool {
+func (p *passwordManager) VerifyPassword(currentPassword string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(currentPassword), []byte(password))
 	return err == nil
 }
 
-func (p *PasswordManager) HashPassword(password string) (string, error) {
+func (p *passwordManager) HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(hashedPassword), err
 }

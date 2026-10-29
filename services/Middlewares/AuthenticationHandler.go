@@ -18,7 +18,7 @@ func DisallowAuthentication() gin.HandlerFunc {
 	}
 }
 
-func AuthenticateMiddleware(tokenManager *Utilities.TokenManager) gin.HandlerFunc {
+func AuthenticateMiddleware(tokenManager Utilities.TokenManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		disallowAuthentication := c.GetBool(DisallowAuthenticationKey)
 

@@ -1,11 +1,11 @@
 package Utilities
 
-type IValidator interface {
-	IsNullOrEmpty(value string) *Validator
-	CheckPasswordRule(password string) *Validator
-	VerifyEmail(value string) *Validator
-	VerifyPassword(value string, currentValue string) *Validator
-	VerifyPhoneNumber(value string) *Validator
+type Validator interface {
+	IsNullOrEmpty(value string) *validator
+	CheckPasswordRule(password string) *validator
+	VerifyEmail(value string) *validator
+	VerifyPassword(value string, currentValue string) *validator
+	VerifyPhoneNumber(value string) *validator
 	Verify() *ValidatorResult
-	VerifyAuthenticationType(value string) *Validator
+	VerifyAuthenticationType(value string) *validator
 }

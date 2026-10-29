@@ -14,7 +14,7 @@ import (
 	b64 "encoding/base64"
 )
 
-type TokenManager struct {
+type tokenManager struct {
 	Logger          *slog.Logger
 	SecretKey       string
 	DurationMins    string
@@ -23,7 +23,7 @@ type TokenManager struct {
 	TokenSecretKey  string
 }
 
-func (t *TokenManager) GenerateToken(email string) (string, error) {
+func (t *tokenManager) GenerateToken(email string) (string, error) {
 	i, err := strconv.ParseInt(t.DurationMins, 10, 64)
 	if err != nil {
 		t.Logger.Error(err.Error())
@@ -41,7 +41,7 @@ func (t *TokenManager) GenerateToken(email string) (string, error) {
 	return h, nil
 }
 
-func (t *TokenManager) ValidateToken(email string, token string) bool {
+func (t *tokenManager) ValidateToken(email string, token string) bool {
 	h, err := b64.StdEncoding.DecodeString(token)
 
 	if err != nil {
@@ -63,7 +63,7 @@ func (t *TokenManager) ValidateToken(email string, token string) bool {
 	return true
 }
 
-func (t *TokenManager) DecodeToken(token string) (string, error) {
+func (t *tokenManager) DecodeToken(token string) (string, error) {
 	h, err := b64.StdEncoding.DecodeString(token)
 	if err != nil {
 		t.Logger.Error(err.Error())
@@ -81,7 +81,7 @@ func (t *TokenManager) DecodeToken(token string) (string, error) {
 
 }
 
-func (t *TokenManager) GenerateJWTTokenWithClaims(claims map[string]any) (string, error) {
+func (t *tokenManager) GenerateJWTTokenWithClaims(claims map[string]any) (string, error) {
 
 	newclaims := jwt.MapClaims{}
 
@@ -109,7 +109,7 @@ func (t *TokenManager) GenerateJWTTokenWithClaims(claims map[string]any) (string
 	return tokenString, nil
 }
 
-func (t *TokenManager) GenerateRefreshToken(id int) (string, error) {
+func (t *tokenManager) GenerateRefreshToken(id int) (string, error) {
 	i, err := strconv.ParseInt(t.DurationHrs, 10, 64)
 	if err != nil {
 		t.Logger.Error(err.Error())
@@ -126,7 +126,7 @@ func (t *TokenManager) GenerateRefreshToken(id int) (string, error) {
 	return h, nil
 }
 
-func (t *TokenManager) VerifyRefreshToken(id int, token string) bool {
+func (t *tokenManager) VerifyRefreshToken(id int, token string) bool {
 	h, err := b64.StdEncoding.DecodeString(token)
 
 	if err != nil {
@@ -145,7 +145,7 @@ func (t *TokenManager) VerifyRefreshToken(id int, token string) bool {
 	return true
 }
 
-func (t *TokenManager) VerifyJWTToken(token string) bool {
+func (t *tokenManager) VerifyJWTToken(token string) bool {
 	validToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return []byte(t.TokenSecretKey), nil
 	})
@@ -156,7 +156,7 @@ func (t *TokenManager) VerifyJWTToken(token string) bool {
 	return validToken.Valid
 }
 
-func (t *TokenManager) DecodeJWTToken(token string) (jwt.MapClaims, error) {
+func (t *tokenManager) DecodeJWTToken(token string) (jwt.MapClaims, error) {
 	validToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
@@ -176,8 +176,8 @@ func (t *TokenManager) DecodeJWTToken(token string) (jwt.MapClaims, error) {
 
 	return claims, nil
 }
-func TokenManagerCons(handler *slog.JSONHandler) *TokenManager {
-	return &TokenManager{
+func NewTokenManager(handler *slog.JSONHandler) TokenManager {
+	return &tokenManager{
 		Logger:          slog.New(handler),
 		SecretKey:       os.Getenv("TOKEN_SECRET"),
 		TokenSecretKey:  os.Getenv("SECRET_KEY"),
@@ -187,4 +187,4 @@ func TokenManagerCons(handler *slog.JSONHandler) *TokenManager {
 	}
 }
 
-var _ ITokenManager = (*TokenManager)(nil)
+var _ TokenManager = (*tokenManager)(nil)

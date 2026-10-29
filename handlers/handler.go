@@ -11,11 +11,11 @@ import (
 )
 
 type Handler struct {
-	Service services.ITaskService
+	Service services.TaskService
 }
 
 // Constructor function to instantiate with the TaskService dependency injected
-func TaskHandler(service *services.TaskService) *Handler {
+func TaskHandler(service services.TaskService) *Handler {
 	return &Handler{
 		Service: service,
 	}

@@ -38,11 +38,11 @@ var templateVars = map[string]string{
 	"Phonenumber": "Templates/phonenumber.html",
 }
 
-type EmailService struct {
+type emailService struct {
 	Logger *slog.Logger
 }
 
-func (e *EmailService) GenerateMailgunTemplate(from string, to string, subject string, html string) MailgunMessage {
+func (e *emailService) GenerateMailgunTemplate(from string, to string, subject string, html string) MailgunMessage {
 	return MailgunMessage{
 		From:    from,
 		To:      to,
@@ -51,13 +51,13 @@ func (e *EmailService) GenerateMailgunTemplate(from string, to string, subject s
 	}
 }
 
-func EmailServiceCon(handler *slog.JSONHandler) *EmailService {
-	return &EmailService{
+func NewEmailService(handler *slog.JSONHandler) EmailService {
+	return &emailService{
 		Logger: slog.New(handler),
 	}
 }
 
-func (e *EmailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
+func (e *emailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
 	domainName := os.Getenv("DOMAIN_NAME")
 	apiKey := os.Getenv("API_KEY")
 	reqURL := "https://api.mailgun.net/v3/" + domainName + "/messages"
@@ -127,7 +127,7 @@ func (e *EmailService) SendEmail(msg MailgunMessage) (*MailgunResponse, error) {
 	}, nil
 }
 
-func (e *EmailService) SendEmailAsync(msg MailgunMessage) {
+func (e *emailService) SendEmailAsync(msg MailgunMessage) {
 	go func() {
 		res, err := e.SendEmail(msg)
 		if err != nil {
@@ -140,7 +140,7 @@ func (e *EmailService) SendEmailAsync(msg MailgunMessage) {
 	}()
 }
 
-func (e *EmailService) GenerateHTMLTemplate(templateName string, data map[string]any) (string, error) {
+func (e *emailService) GenerateHTMLTemplate(templateName string, data map[string]any) (string, error) {
 	templateLocation := templateVars[templateName]
 	content, err := os.ReadFile(templateLocation)
 	if err != nil {
@@ -160,4 +160,4 @@ func (e *EmailService) GenerateHTMLTemplate(templateName string, data map[string
 	return buf.String(), nil
 }
 
-var _ IEmailService = (*EmailService)(nil)
+var _ EmailService = (*emailService)(nil)

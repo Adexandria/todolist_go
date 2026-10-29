@@ -8,12 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+type userRepository struct {
 	Db     *gorm.DB
 	Logger *slog.Logger
 }
 
-func (u *UserRepository) GetUserByRefreshToken(refreshToken string) (models.User, error) {
+func (u *userRepository) GetUserByRefreshToken(refreshToken string) (models.User, error) {
 	ctx := context.Background()
 
 	currentUser, err := gorm.G[models.User](u.Db).Where("refresh_token = ?", refreshToken).First(ctx)
@@ -21,7 +21,7 @@ func (u *UserRepository) GetUserByRefreshToken(refreshToken string) (models.User
 	return currentUser, err
 }
 
-func (u *UserRepository) GetUserById(id int) (models.User, error) {
+func (u *userRepository) GetUserById(id int) (models.User, error) {
 	ctx := context.Background()
 
 	currentUser, err := gorm.G[models.User](u.Db).Where("id = ?", id).First(ctx)
@@ -29,7 +29,7 @@ func (u *UserRepository) GetUserById(id int) (models.User, error) {
 	return currentUser, err
 }
 
-func (u *UserRepository) GetUserByUsername(username string) (models.User, error) {
+func (u *userRepository) GetUserByUsername(username string) (models.User, error) {
 	ctx := context.Background()
 
 	currentUser, err := gorm.G[models.User](u.Db).Where("username = ?", username).First(ctx)
@@ -37,7 +37,7 @@ func (u *UserRepository) GetUserByUsername(username string) (models.User, error)
 	return currentUser, err
 }
 
-func (u *UserRepository) GetUserByEmail(email string) (models.User, error) {
+func (u *userRepository) GetUserByEmail(email string) (models.User, error) {
 	ctx := context.Background()
 
 	currentUser, err := gorm.G[models.User](u.Db).Where("email = ?", email).First(ctx)
@@ -45,7 +45,7 @@ func (u *UserRepository) GetUserByEmail(email string) (models.User, error) {
 	return currentUser, err
 }
 
-func (u *UserRepository) VerifyUserById(id int) (bool, error) {
+func (u *userRepository) VerifyUserById(id int) (bool, error) {
 	var count int64
 
 	err := u.Db.Model(&models.User{}).Where("id = ?", id).Count(&count).Error
@@ -58,7 +58,7 @@ func (u *UserRepository) VerifyUserById(id int) (bool, error) {
 
 }
 
-func (u *UserRepository) VerifyUserByEmail(email string) (bool, error) {
+func (u *userRepository) VerifyUserByEmail(email string) (bool, error) {
 	var count int64
 
 	err := u.Db.Model(&models.User{}).Where("email = ?", email).Count(&count).Error
@@ -70,7 +70,7 @@ func (u *UserRepository) VerifyUserByEmail(email string) (bool, error) {
 	return count > 0, nil
 }
 
-func (u *UserRepository) CreateUser(user *models.User) error {
+func (u *userRepository) CreateUser(user *models.User) error {
 	ctx := context.Background()
 
 	err := gorm.G[models.User](u.Db).Create(ctx, user)
@@ -78,7 +78,7 @@ func (u *UserRepository) CreateUser(user *models.User) error {
 	return err
 }
 
-func (u *UserRepository) UpdateUser(user *models.User) error {
+func (u *userRepository) UpdateUser(user *models.User) error {
 	ctx := context.Background()
 
 	_, err := gorm.G[models.User](u.Db).Where("id = ?", user.ID).Select("*").Updates(ctx, *user)
@@ -86,7 +86,7 @@ func (u *UserRepository) UpdateUser(user *models.User) error {
 	return err
 }
 
-func (u *UserRepository) DeleteUser(user *models.User) error {
+func (u *userRepository) DeleteUser(user *models.User) error {
 	ctx := context.Background()
 
 	_, err := gorm.G[models.User](u.Db).Where("id = ?", user.ID).Select("user_id").Delete(ctx)
@@ -94,11 +94,11 @@ func (u *UserRepository) DeleteUser(user *models.User) error {
 	return err
 }
 
-func UserRepoCon(db *gorm.DB, handler *slog.JSONHandler) *UserRepository {
-	return &UserRepository{
+func NewUserRepo(db *gorm.DB, handler *slog.JSONHandler) UserRepository {
+	return &userRepository{
 		Db:     db,
 		Logger: slog.New(handler),
 	}
 }
 
-var _ IUserRepository = (*UserRepository)(nil)
+var _ UserRepository = (*userRepository)(nil)

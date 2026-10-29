@@ -7,42 +7,42 @@ import (
 	"strings"
 )
 
-type Validator struct {
+type validator struct {
 	AccessRule *AccessRule
 	Errors     []string
 }
 
-var _ IValidator = (*Validator)(nil)
+var _ Validator = (*validator)(nil)
 
-func ValidatorCon(rule *AccessRule) *Validator {
-	return &Validator{
+func ValidatorCon(rule *AccessRule) Validator {
+	return &validator{
 		AccessRule: rule,
 		Errors:     []string{},
 	}
 }
 
-func (r *Validator) VerifyPhoneNumber(value string) *Validator {
+func (r *validator) VerifyPhoneNumber(value string) *validator {
 	if len(value) < 10 {
 		r.Errors = append(r.Errors, "Invalid PhoneNumber")
 	}
 	return r
 }
 
-func (r *Validator) CheckPasswordRule(password string) *Validator {
+func (r *validator) CheckPasswordRule(password string) *validator {
 	return r.verifyHasNumber(password).
 		verifyHasCapitalLetter(password).
 		verifyHasSpecialLetter(password).verifyHasSmallerLetter(password).
 		verifyMinPasswordLength(password).verifyMaxPasswordLength(password)
 }
 
-func (r *Validator) VerifyPassword(value string, currentValue string) *Validator {
+func (r *validator) VerifyPassword(value string, currentValue string) *validator {
 	if value != currentValue {
 		r.Errors = append(r.Errors, "Passwords don't match")
 	}
 	return r
 }
 
-func (r *Validator) IsNullOrEmpty(value string) *Validator {
+func (r *validator) IsNullOrEmpty(value string) *validator {
 	result := value == "" || value == "null"
 	if result {
 		r.Errors = append(r.Errors, "Value must contain at least one character")
@@ -50,7 +50,7 @@ func (r *Validator) IsNullOrEmpty(value string) *Validator {
 	return r
 }
 
-func (r *Validator) VerifyEmail(value string) *Validator {
+func (r *validator) VerifyEmail(value string) *validator {
 	re := regexp.MustCompile(`(\w+)@(\w+)\.(\w+)`)
 	result := re.MatchString(value)
 	if !result {
@@ -59,7 +59,7 @@ func (r *Validator) VerifyEmail(value string) *Validator {
 	return r
 }
 
-func (r *Validator) Verify() *ValidatorResult {
+func (r *validator) Verify() *ValidatorResult {
 	if len(r.Errors) > 0 {
 
 		currentErrors := r.Errors
@@ -70,7 +70,7 @@ func (r *Validator) Verify() *ValidatorResult {
 	return Success()
 }
 
-func (r *Validator) verifyHasNumber(password string) *Validator {
+func (r *validator) verifyHasNumber(password string) *validator {
 	if r.AccessRule.PasswordRule.HasNumber {
 		re := regexp.MustCompile("[0-9]+")
 		result := re.MatchString(password)
@@ -80,7 +80,7 @@ func (r *Validator) verifyHasNumber(password string) *Validator {
 	}
 	return r
 }
-func (r *Validator) verifyHasCapitalLetter(password string) *Validator {
+func (r *validator) verifyHasCapitalLetter(password string) *validator {
 	if r.AccessRule.PasswordRule.HasCapitalLetter {
 		re := regexp.MustCompile("[A-Z]")
 		result := re.MatchString(password)
@@ -90,7 +90,7 @@ func (r *Validator) verifyHasCapitalLetter(password string) *Validator {
 	}
 	return r
 }
-func (r *Validator) verifyHasSmallerLetter(password string) *Validator {
+func (r *validator) verifyHasSmallerLetter(password string) *validator {
 	if r.AccessRule.PasswordRule.HasSpecialCharacter {
 		re := regexp.MustCompile("[a-z]")
 		result := re.MatchString(password)
@@ -100,7 +100,7 @@ func (r *Validator) verifyHasSmallerLetter(password string) *Validator {
 	}
 	return r
 }
-func (r *Validator) verifyHasSpecialLetter(password string) *Validator {
+func (r *validator) verifyHasSpecialLetter(password string) *validator {
 	if r.AccessRule.PasswordRule.HasSpecialCharacter {
 		re := regexp.MustCompile("[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]")
 		result := re.MatchString(password)
@@ -111,7 +111,7 @@ func (r *Validator) verifyHasSpecialLetter(password string) *Validator {
 	return r
 }
 
-func (r *Validator) verifyMinPasswordLength(password string) *Validator {
+func (r *validator) verifyMinPasswordLength(password string) *validator {
 	if r.AccessRule.PasswordRule.MinimumPasswordLength > len(password) {
 		err := fmt.Sprintf("Invalid Password Length, Password must contain more than %d characters", r.AccessRule.PasswordRule.MinimumPasswordLength)
 		r.Errors = append(r.Errors, err)
@@ -119,7 +119,7 @@ func (r *Validator) verifyMinPasswordLength(password string) *Validator {
 	return r
 }
 
-func (r *Validator) verifyMaxPasswordLength(password string) *Validator {
+func (r *validator) verifyMaxPasswordLength(password string) *validator {
 	if r.AccessRule.PasswordRule.MaximumPasswordLength > len(password) {
 		err := fmt.Sprintf("Invalid Password Length, Password must not contain more than %d characters", r.AccessRule.PasswordRule.MaximumPasswordLength)
 		r.Errors = append(r.Errors, err)
@@ -127,7 +127,7 @@ func (r *Validator) verifyMaxPasswordLength(password string) *Validator {
 	return r
 }
 
-func (r *Validator) VerifyAuthenticationType(value string) *Validator {
+func (r *validator) VerifyAuthenticationType(value string) *validator {
 	for _, name := range models.AuthenticationTypes {
 		if name == strings.ToLower(value) {
 			return r

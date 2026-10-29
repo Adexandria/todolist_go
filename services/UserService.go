@@ -6,12 +6,12 @@ import (
 	"SM/repositories/Utilities"
 )
 
-type UserService struct {
-	userRepos       repositories.IUserRepository
-	passwordManager Utilities.IPasswordManager
+type userService struct {
+	userRepos       repositories.UserRepository
+	passwordManager Utilities.PasswordManager
 }
 
-func (u *UserService) CreateUser(newUser *models.CreateUserDTO) *ActionResult {
+func (u *userService) CreateUser(newUser *models.CreateUserDTO) *ActionResult {
 	passwordHashed, err := u.passwordManager.HashPassword(newUser.Password)
 	if err != nil {
 		return BadRequestResult("Failed to create user")
@@ -41,7 +41,7 @@ func (u *UserService) CreateUser(newUser *models.CreateUserDTO) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) CreateAdmin(id int, newUser *models.CreateUserDTO) *ActionResult {
+func (u *userService) CreateAdmin(id int, newUser *models.CreateUserDTO) *ActionResult {
 	_, err := u.userRepos.VerifyUserById(id)
 	if err != nil {
 		return BadRequestResult("Failed to create user")
@@ -70,7 +70,7 @@ func (u *UserService) CreateAdmin(id int, newUser *models.CreateUserDTO) *Action
 	return SuccessResult()
 }
 
-func (u *UserService) GetUserById(id int) *ActionResultModel[*models.UserDTO] {
+func (u *userService) GetUserById(id int) *ActionResultModel[*models.UserDTO] {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundDataResult[*models.UserDTO]("User not found")
@@ -89,7 +89,7 @@ func (u *UserService) GetUserById(id int) *ActionResultModel[*models.UserDTO] {
 	return SuccessDataResult(userDTO)
 }
 
-func (u *UserService) DeleteUser(id int) *ActionResult {
+func (u *userService) DeleteUser(id int) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -102,7 +102,7 @@ func (u *UserService) DeleteUser(id int) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) SetEmail(id int, email string) *ActionResult {
+func (u *userService) SetEmail(id int, email string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -118,7 +118,7 @@ func (u *UserService) SetEmail(id int, email string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) ConfirmEmail(email string) *ActionResult {
+func (u *userService) ConfirmEmail(email string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserByEmail(email)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -134,7 +134,7 @@ func (u *UserService) ConfirmEmail(email string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) SetPhoneNumber(id int, phone string) *ActionResult {
+func (u *userService) SetPhoneNumber(id int, phone string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -150,7 +150,7 @@ func (u *UserService) SetPhoneNumber(id int, phone string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) ConfirmPhoneNumber(id int) *ActionResult {
+func (u *userService) ConfirmPhoneNumber(id int) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -166,7 +166,7 @@ func (u *UserService) ConfirmPhoneNumber(id int) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) SetUsername(id int, username string) *ActionResult {
+func (u *userService) SetUsername(id int, username string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -182,7 +182,7 @@ func (u *UserService) SetUsername(id int, username string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) SetFirstName(id int, firstName string) *ActionResult {
+func (u *userService) SetFirstName(id int, firstName string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -198,7 +198,7 @@ func (u *UserService) SetFirstName(id int, firstName string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) SetLastName(id int, lastName string) *ActionResult {
+func (u *userService) SetLastName(id int, lastName string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -214,7 +214,7 @@ func (u *UserService) SetLastName(id int, lastName string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) ChangePassword(id int, oldPassword string, newPassword string) *ActionResult {
+func (u *userService) ChangePassword(id int, oldPassword string, newPassword string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("Failed to change password")
@@ -238,7 +238,7 @@ func (u *UserService) ChangePassword(id int, oldPassword string, newPassword str
 	return SuccessResult()
 }
 
-func (u *UserService) ChangeAnonPassword(email string, newPassword string) *ActionResult {
+func (u *userService) ChangeAnonPassword(email string, newPassword string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserByEmail(email)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -256,7 +256,7 @@ func (u *UserService) ChangeAnonPassword(email string, newPassword string) *Acti
 	return SuccessResult()
 }
 
-func (u *UserService) ChangeRole(id int, role string) *ActionResult {
+func (u *userService) ChangeRole(id int, role string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -277,7 +277,7 @@ func (u *UserService) ChangeRole(id int, role string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) EnableLockout(username string) *ActionResult {
+func (u *userService) EnableLockout(username string) *ActionResult {
 	currentUser, err := u.userRepos.GetUserByUsername(username)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -293,7 +293,7 @@ func (u *UserService) EnableLockout(username string) *ActionResult {
 	return SuccessResult()
 }
 
-func (u *UserService) DisableLockout(id int) *ActionResult {
+func (u *userService) DisableLockout(id int) *ActionResult {
 	currentUser, err := u.userRepos.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -309,10 +309,10 @@ func (u *UserService) DisableLockout(id int) *ActionResult {
 	return SuccessResult()
 }
 
-func UserServiceCon(userRepository *repositories.UserRepository, passwordManager *Utilities.PasswordManager) *UserService {
-	return &UserService{
+func NewUserService(userRepository repositories.UserRepository, passwordManager Utilities.PasswordManager) UserService {
+	return &userService{
 		userRepos:       userRepository,
 		passwordManager: passwordManager}
 }
 
-var _ IUserService = (*UserService)(nil)
+var _ UserService = (*userService)(nil)
