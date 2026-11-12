@@ -46,8 +46,8 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	must(container.Invoke(func(h *handlers.Handler, jsonHandler *slog.JSONHandler,
-		tokenManager *Utilities.TokenManager, u *repositories.UserRepository,
-		a *handlers.UserHandler, passwordManager *Utilities.PasswordManager) {
+		tokenManager Utilities.TokenManager, u repositories.UserRepository,
+		a *handlers.UserHandler, passwordManager Utilities.PasswordManager) {
 		logger := slog.New(jsonHandler)
 
 		CreateDefaultAdmin(u, passwordManager, logger)
@@ -70,7 +70,7 @@ func must(err error) {
 	}
 }
 
-func CreateDefaultAdmin(userRepos *repositories.UserRepository, passwordManager *Utilities.PasswordManager, logger *slog.Logger) {
+func CreateDefaultAdmin(userRepos repositories.UserRepository, passwordManager Utilities.PasswordManager, logger *slog.Logger) {
 
 	passwordHash, err := passwordManager.HashPassword(os.Getenv("ADMIN_PASSWORD"))
 

@@ -10,7 +10,7 @@ import (
 )
 
 func registerRoutes(router *gin.Engine, tasks *handlers.Handler,
-	tokenManager *Utilities.TokenManager, users *handlers.UserHandler) {
+	tokenManager Utilities.TokenManager, users *handlers.UserHandler) {
 
 	authn := Middlewares.AuthenticateMiddleware(tokenManager)
 	authz := Middlewares.AuthorizeMiddleware()

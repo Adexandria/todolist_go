@@ -14,15 +14,15 @@ import (
 )
 
 type UserHandler struct {
-	IUserService           services.IUserService
-	IAuthenticationService services.IAuthenticationService
+	IUserService           services.UserService
+	IAuthenticationService services.AuthenticationService
 	LockoutTrial           string
-	IValidator             Utilities.IValidator
-	IEmailService          services.IEmailService
+	IValidator             Utilities.Validator
+	IEmailService          services.EmailService
 }
 
-func UserHandlerCon(userService *services.UserService, authenticationService *services.AuthenticationService,
-	validator *Utilities.Validator, emailService *services.EmailService) *UserHandler {
+func UserHandlerCon(userService services.UserService, authenticationService services.AuthenticationService,
+	validator Utilities.Validator, emailService services.EmailService) *UserHandler {
 	return &UserHandler{IUserService: userService,
 		IAuthenticationService: authenticationService,
 		LockoutTrial:           os.Getenv("LOCKOUT_TRIAL"),

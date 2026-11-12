@@ -1,5 +1,5 @@
 package services
 
-type ISmsService interface {
+type SmsService interface {
 	SendOTP(phonenumber string, code string)
 }

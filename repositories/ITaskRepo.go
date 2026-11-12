@@ -2,8 +2,8 @@ package repositories
 
 import "SM/models"
 
-// Tasker defines the interface for task-related database operations
-type Tasker interface {
+// TaskRepository defines the interface for task-related database operations
+type TaskRepository interface {
 
 	// Creates a new task
 	Create(dto *models.Task) (uint, string)

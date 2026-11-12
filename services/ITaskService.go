@@ -2,10 +2,10 @@ package services
 
 import "SM/models"
 
-// ITaskService defines the interface for task-related operations
+// TaskService defines the interface for task-related operations
 // It includes methods for searching, creating, updating, deleting, and retrieving tasks based on various criteria.
 // This interface allows for abstraction and decoupling of the task service implementation from its usage, enabling easier testing and maintenance.
-type ITaskService interface {
+type TaskService interface {
 
 	// Searches for tasks by name with pagination
 	SearchTaskByName(userId int, name string, page int, pageSize int) models.PaginatedDTO

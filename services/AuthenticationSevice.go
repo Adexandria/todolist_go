@@ -15,17 +15,17 @@ import (
 	"github.com/xlzd/gotp"
 )
 
-type AuthenticationService struct {
-	IUserRepository  repositories.IUserRepository
-	IPasswordManager Utilities.IPasswordManager
-	ITokenManager    Utilities.ITokenManager
+type authenticationService struct {
+	IUserRepository  repositories.UserRepository
+	IPasswordManager Utilities.PasswordManager
+	ITokenManager    Utilities.TokenManager
 	AccessRule       *Utilities.AccessRule
-	IEmailService    IEmailService
-	ISmsService      ISmsService
+	IEmailService    EmailService
+	ISmsService      SmsService
 	Log              *slog.Logger
 }
 
-func (a *AuthenticationService) Authenticate(username string, password string) *AuthenticationResult {
+func (a *authenticationService) Authenticate(username string, password string) *AuthenticationResult {
 	currentUser, err := a.IUserRepository.GetUserByUsername(username)
 	if err != nil {
 		return FailAuthenticationResult("Invalid username/password")
@@ -80,7 +80,7 @@ func (a *AuthenticationService) Authenticate(username string, password string) *
 	return SuccessAuthenticationResult(accessToken, refreshToken)
 }
 
-func sendLoginMail(a *AuthenticationService, username string, email string) {
+func sendLoginMail(a *authenticationService, username string, email string) {
 	data := map[string]any{
 		"Username":    username,
 		"Login_time":  time.Now().UTC().Format("2006-01-02 15:04:05"),
@@ -97,7 +97,7 @@ func sendLoginMail(a *AuthenticationService, username string, email string) {
 	a.IEmailService.SendEmailAsync(mailMessage)
 }
 
-func sendEmailConfirmationMail(a *AuthenticationService, username string, email string, token string) {
+func sendEmailConfirmationMail(a *authenticationService, username string, email string, token string) {
 	data := map[string]any{
 		"Verification_url": fmt.Sprintf("%s/api/auth/confirm-email?token=%s&email=%s", os.Getenv("BASE_URL"), token, email),
 		"Username":         username,
@@ -113,7 +113,7 @@ func sendEmailConfirmationMail(a *AuthenticationService, username string, email 
 	a.IEmailService.SendEmailAsync(mailMessage)
 }
 
-func (a *AuthenticationService) SendEmailConfirmationMail(userId int) {
+func (a *authenticationService) SendEmailConfirmationMail(userId int) {
 	currentUser, err := a.IUserRepository.GetUserById(userId)
 	if err != nil {
 		a.Log.Error(err.Error())
@@ -127,7 +127,7 @@ func (a *AuthenticationService) SendEmailConfirmationMail(userId int) {
 	sendEmailConfirmationMail(a, currentUser.Username, currentUser.Email, tokenResult.Data)
 }
 
-func (a *AuthenticationService) GenerateAccessWithRefreshToken(token string) *AuthenticationResult {
+func (a *authenticationService) GenerateAccessWithRefreshToken(token string) *AuthenticationResult {
 	currentUser, err := a.IUserRepository.GetUserByRefreshToken(token)
 
 	verifiedToken := a.ITokenManager.VerifyRefreshToken(int(currentUser.ID), token)
@@ -166,7 +166,7 @@ func (a *AuthenticationService) GenerateAccessWithRefreshToken(token string) *Au
 	return SuccessAuthenticationResult(accessToken, refreshToken)
 }
 
-func (a *AuthenticationService) GenerateAccessToken(email string) *AuthenticationResult {
+func (a *authenticationService) GenerateAccessToken(email string) *AuthenticationResult {
 	currentUser, err := a.IUserRepository.GetUserByEmail(email)
 
 	if err != nil {
@@ -199,7 +199,7 @@ func (a *AuthenticationService) GenerateAccessToken(email string) *Authenticatio
 	return SuccessAuthenticationResult(accessToken, refreshToken)
 }
 
-func (a *AuthenticationService) DeleteRefreshToken(token string) *ActionResult {
+func (a *authenticationService) DeleteRefreshToken(token string) *ActionResult {
 	currentUser, err := a.IUserRepository.GetUserByRefreshToken(token)
 
 	if err != nil {
@@ -222,7 +222,7 @@ func (a *AuthenticationService) DeleteRefreshToken(token string) *ActionResult {
 
 }
 
-func (a *AuthenticationService) GeneratePhoneNumberResetToken(id int) *ActionResult {
+func (a *authenticationService) GeneratePhoneNumberResetToken(id int) *ActionResult {
 	currentUser, err := a.IUserRepository.GetUserById(id)
 
 	if err != nil {
@@ -252,7 +252,7 @@ func (a *AuthenticationService) GeneratePhoneNumberResetToken(id int) *ActionRes
 	return SuccessResult()
 }
 
-func (a *AuthenticationService) VerifyPhoneNumberResetToken(id int, token string) *ActionResult {
+func (a *authenticationService) VerifyPhoneNumberResetToken(id int, token string) *ActionResult {
 	currentUser, err := a.IUserRepository.GetUserById(id)
 	if err != nil {
 		return BadRequestResult("Failed to verify phone number")
@@ -264,7 +264,7 @@ func (a *AuthenticationService) VerifyPhoneNumberResetToken(id int, token string
 	return SuccessResult()
 }
 
-func (a *AuthenticationService) VerifyToken(email string, token string) *ActionResult {
+func (a *authenticationService) VerifyToken(email string, token string) *ActionResult {
 	_, err := a.IUserRepository.VerifyUserByEmail(email)
 
 	if err != nil {
@@ -280,7 +280,7 @@ func (a *AuthenticationService) VerifyToken(email string, token string) *ActionR
 	return SuccessResult()
 }
 
-func (a *AuthenticationService) DecodeToken(token string) *ActionResultModel[string] {
+func (a *authenticationService) DecodeToken(token string) *ActionResultModel[string] {
 	email, err := a.ITokenManager.DecodeToken(token)
 	if err != nil {
 		return BadRequestDataResult[string]("Invalid token")
@@ -300,7 +300,7 @@ func (a *AuthenticationService) DecodeToken(token string) *ActionResultModel[str
 
 }
 
-func (a *AuthenticationService) GenerateResetToken(email string) *ActionResultModel[string] {
+func (a *authenticationService) GenerateResetToken(email string) *ActionResultModel[string] {
 	currentUser, err := a.IUserRepository.GetUserByEmail(email)
 
 	if err != nil {
@@ -316,7 +316,7 @@ func (a *AuthenticationService) GenerateResetToken(email string) *ActionResultMo
 	return SuccessDataResult(token)
 }
 
-func (a *AuthenticationService) EnableTwoFactorAuthentication(id int, authenticationType string) *ActionResultModel[string] {
+func (a *authenticationService) EnableTwoFactorAuthentication(id int, authenticationType string) *ActionResultModel[string] {
 	currentUser, err := a.IUserRepository.GetUserById(id)
 	if err != nil {
 		return NotFoundDataResult[string]("User not found")
@@ -365,7 +365,7 @@ func (a *AuthenticationService) EnableTwoFactorAuthentication(id int, authentica
 	return SuccessDataResult(data)
 }
 
-func (a *AuthenticationService) DisableTwoFactorAuthentication(id int) *ActionResult {
+func (a *authenticationService) DisableTwoFactorAuthentication(id int) *ActionResult {
 	currentUser, err := a.IUserRepository.GetUserById(id)
 	if err != nil {
 		return NotFoundResult("User not found")
@@ -385,7 +385,7 @@ func (a *AuthenticationService) DisableTwoFactorAuthentication(id int) *ActionRe
 	return SuccessResult()
 }
 
-func (a *AuthenticationService) GenerateOTP(id int) *ActionResultModel[string] {
+func (a *authenticationService) GenerateOTP(id int) *ActionResultModel[string] {
 	currentUser, err := a.IUserRepository.GetUserById(id)
 
 	if err != nil {
@@ -405,7 +405,7 @@ func (a *AuthenticationService) GenerateOTP(id int) *ActionResultModel[string] {
 	return SuccessDataResult(otp)
 }
 
-func (a *AuthenticationService) VerifyOTP(email string, otp string) *ActionResult {
+func (a *authenticationService) VerifyOTP(email string, otp string) *ActionResult {
 
 	currentUser, err := a.IUserRepository.GetUserByEmail(email)
 	if err != nil {
@@ -423,9 +423,9 @@ func (a *AuthenticationService) VerifyOTP(email string, otp string) *ActionResul
 	return BadRequestResult("Invalid otp")
 }
 
-func AuthenticationServiceCons(userRepository *repositories.UserRepository, passwordManager *Utilities.PasswordManager,
-	tokenManager *Utilities.TokenManager, smsService *SmsService, accessrule *Utilities.AccessRule, emailService *EmailService, handler *slog.JSONHandler) *AuthenticationService {
-	return &AuthenticationService{
+func NewAuthenticationService(userRepository repositories.UserRepository, passwordManager Utilities.PasswordManager,
+	tokenManager Utilities.TokenManager, smsService SmsService, accessrule *Utilities.AccessRule, emailService EmailService, handler *slog.JSONHandler) AuthenticationService {
+	return &authenticationService{
 		IUserRepository:  userRepository,
 		IPasswordManager: passwordManager,
 		ITokenManager:    tokenManager,
@@ -436,4 +436,4 @@ func AuthenticationServiceCons(userRepository *repositories.UserRepository, pass
 	}
 }
 
-var _ IAuthenticationService = (*AuthenticationService)(nil)
+var _ AuthenticationService = (*authenticationService)(nil)

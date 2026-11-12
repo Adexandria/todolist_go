@@ -1,6 +1,6 @@
 package Utilities
 
-type IPasswordManager interface {
+type PasswordManager interface {
 	VerifyPassword(currentPassword string, password string) bool
 	HashPassword(password string) (string, error)
 }

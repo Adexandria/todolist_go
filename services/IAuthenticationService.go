@@ -1,6 +1,6 @@
 package services
 
-type IAuthenticationService interface {
+type AuthenticationService interface {
 	Authenticate(username string, password string) *AuthenticationResult
 	GeneratePhoneNumberResetToken(id int) *ActionResult
 	VerifyPhoneNumberResetToken(id int, token string) *ActionResult

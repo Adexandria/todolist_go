@@ -9,16 +9,16 @@ import (
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 )
 
-type SmsService struct {
+type smsService struct {
 	Logger *slog.Logger
 }
 
-func SmsCon(jsonHandler *slog.JSONHandler) *SmsService {
-	return &SmsService{
+func NewSmsService(jsonHandler *slog.JSONHandler) SmsService {
+	return &smsService{
 		Logger: slog.New(jsonHandler),
 	}
 }
-func (s *SmsService) SendOTP(phonenumber string, code string) {
+func (s *smsService) SendOTP(phonenumber string, code string) {
 	from := os.Getenv("TWILIO_NUMBER")
 	accountSid := os.Getenv("TWILIO_ACCOUNT_SID")
 	apiKey := os.Getenv("TWILIO_API_KEY")
@@ -45,3 +45,5 @@ func (s *SmsService) SendOTP(phonenumber string, code string) {
 		s.Logger.Info("Sent OTP Successfully to User")
 	}
 }
+
+var _ SmsService = (*smsService)(nil)

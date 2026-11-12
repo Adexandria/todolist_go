@@ -2,7 +2,7 @@ package services
 
 import "SM/models"
 
-type IUserService interface {
+type UserService interface {
 	CreateUser(newUser *models.CreateUserDTO) *ActionResult
 
 	CreateAdmin(id int, newUser *models.CreateUserDTO) *ActionResult
