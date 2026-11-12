@@ -44,7 +44,7 @@ func (u *UserDatabase) AddNewAdmin() int {
 func (u *UserDatabase) GetUserById(id int) (models.User, error) {
 	currentUser := u.data[uint(id)]
 	if currentUser == nil {
-		return models.User{}, errors.New("User not found")
+		return models.User{}, errors.New("user not found")
 	}
 	return *currentUser, nil
 }
@@ -64,7 +64,7 @@ func (u *UserDatabase) GetUserByUsername(username string) (models.User, error) {
 			return *user, nil
 		}
 	}
-	return models.User{}, errors.New("User not found")
+	return models.User{}, errors.New("user not found")
 }
 
 func (u *UserDatabase) GetUserByEmail(email string) (models.User, error) {
@@ -73,7 +73,7 @@ func (u *UserDatabase) GetUserByEmail(email string) (models.User, error) {
 			return *user, nil
 		}
 	}
-	return models.User{}, errors.New("User not found")
+	return models.User{}, errors.New("user not found")
 }
 
 func (u *UserDatabase) GetUserByRefreshToken(refreshToken string) (models.User, error) {
@@ -82,7 +82,7 @@ func (u *UserDatabase) GetUserByRefreshToken(refreshToken string) (models.User, 
 			return *user, nil
 		}
 	}
-	return models.User{}, errors.New("User not found")
+	return models.User{}, errors.New("user not found")
 }
 
 func (u *UserDatabase) CreateUser(user *models.User) error {
@@ -118,7 +118,7 @@ func (u *UserDatabase) VerifyUserById(id int) (bool, error) {
 			return true, nil
 		}
 	}
-	return false, errors.New("Failed to verify user")
+	return false, errors.New("failed to verify user")
 }
 
 var _ repositories.UserRepository = (*UserDatabase)(nil)
