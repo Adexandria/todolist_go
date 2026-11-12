@@ -28,8 +28,8 @@ A RESTful task-management API written in Go, with JWT authentication, role-based
 
 ## Roadmap (In progress)
 
-- [ ] Unit tests for services and repositories using injected fakes
+- [X] Unit tests for services and repositories using injected fakes
 - [ ] Handler-level tests with `httptest`
 - [ ] Dockerfile and CI pipeline (GitHub Actions: build, vet, test)
-- [ ] Pagination for task listing
-- [ ] Environment-based configuration (port, JWT secret, database path)
+- [x] Pagination for task listing
+- [x] Environment-based configuration (port, JWT secret, database path)
