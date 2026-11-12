@@ -15,4 +15,5 @@ type UserRepository interface {
 
 	VerifyUserByEmail(email string) (bool, error)
 	VerifyUserById(id int) (bool, error)
+	VerifyUserByUsername(username string) (bool, error)
 }

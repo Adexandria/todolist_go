@@ -49,6 +49,7 @@ type UserDTO struct {
 
 type User struct {
 	gorm.Model
+	ID                   uint   `Gorm:"primaryKey;autoIncrement"`
 	FirstName            string `Gorm:"size:255"`
 	LastName             string `Gorm:"size:255"`
 	Username             string `Gorm:"unique"`

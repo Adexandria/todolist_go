@@ -19,6 +19,11 @@ func (u *userService) CreateUser(newUser *models.CreateUserDTO) *ActionResult {
 
 	isExist, _ := u.userRepos.VerifyUserByEmail(newUser.Email)
 	if isExist {
+		return BadRequestResult("Email already exists")
+	}
+
+	isUsernameExist, _ := u.userRepos.VerifyUserByUsername(newUser.Username)
+	if isUsernameExist {
 		return BadRequestResult("Username already exists")
 	}
 
@@ -220,7 +225,7 @@ func (u *userService) ChangePassword(id int, oldPassword string, newPassword str
 		return NotFoundResult("Failed to change password")
 	}
 
-	isValid := u.passwordManager.VerifyPassword(oldPassword, newPassword)
+	isValid := u.passwordManager.VerifyPassword(oldPassword, currentUser.Password)
 
 	if !isValid {
 		return BadRequestResult("Failed to change password")

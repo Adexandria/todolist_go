@@ -13,6 +13,18 @@ type userRepository struct {
 	Logger *slog.Logger
 }
 
+func (u *userRepository) VerifyUserByUsername(username string) (bool, error) {
+	var count int64
+
+	err := u.Db.Model(&models.User{}).Where("username = ?", username).Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
 func (u *userRepository) GetUserByRefreshToken(refreshToken string) (models.User, error) {
 	ctx := context.Background()
 
